@@ -374,9 +374,6 @@ def build_gemini_image_request(
     return {
         "_model": resolve_model(provider, args.model),
         "contents": [{"parts": parts}],
-        "generationConfig": {
-            "responseModalities": ["TEXT", "IMAGE"],
-        },
     }
 
 
