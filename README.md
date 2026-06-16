@@ -7,8 +7,10 @@ The project is organized around three layers:
 - Godot handles UI, scenes, input, animation, audio, debugging panels, and editor-facing workflows.
 - A pure C++ core owns deterministic gameplay simulation, including combat rules, units, skills, buffs, grids, economy, RNG, and saves.
 - Python tools validate YAML source data, generate runtime JSON, and run offline simulations or balance reports.
+- Runtime plugins can be implemented with GDScript, C++ GDExtension classes, or external scripts behind one hook contract.
 
 See [docs/architecture.md](docs/architecture.md) for the intended boundaries.
+See [docs/plugin_system.md](docs/plugin_system.md) for the runtime plugin contract.
 
 ## Demo Hub
 
@@ -31,6 +33,7 @@ bindings/   Godot GDExtension bridge and optional CLI adapters
 data/       Human-authored YAML source data and schemas
 tools/      Python validation, generation, and simulation tools
 docs/       Architecture and design notes
+game/plugins/ Runtime plugin manifests and implementations
 ```
 
 ## Initial Workflow
@@ -46,6 +49,7 @@ docs/       Architecture and design notes
 ```powershell
 python tools/mygame_tools/release_pipeline.py plan
 python tools/mygame_tools/release_pipeline.py check
+python tools/mygame_tools/validate_plugins.py
 python tools/mygame_tools/release_pipeline.py notes --version 0.1.0
 ```
 

@@ -13,6 +13,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+try:
+    from mygame_tools.validate_plugins import validate_plugin_layout
+except ModuleNotFoundError:
+    from validate_plugins import validate_plugin_layout
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "release" / "release_targets.json"
@@ -140,8 +145,13 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
 
     _require_file(config.godot_project_dir / "project.godot", errors)
     _require_file(config.godot_project_dir / "scenes" / "app" / "main.tscn", errors)
+    _require_file(config.godot_project_dir / "plugins" / "enabled_plugins.json", errors)
     _require_file(REPO_ROOT / "docs" / "demo_plan.md", errors)
     _require_file(REPO_ROOT / "release" / "release_targets.json", errors)
+
+    plugin_result = validate_plugin_layout()
+    errors.extend(plugin_result.errors)
+    warnings.extend(plugin_result.warnings)
 
     export_presets = config.godot_project_dir / "export_presets.cfg"
     if not export_presets.exists():

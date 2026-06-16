@@ -14,6 +14,7 @@ dependencies = [
 
 [project.scripts]
 nimdagame-release = "mygame_tools.release_pipeline:main"
+nimdagame-validate-plugins = "mygame_tools.validate_plugins:main"
 
 [project.optional-dependencies]
 dev = [

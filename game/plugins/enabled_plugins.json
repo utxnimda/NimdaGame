@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "plugins": [
+    "res://plugins/turn_rpg_training_rules/plugin.json"
+  ]
+}

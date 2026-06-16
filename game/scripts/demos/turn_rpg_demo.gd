@@ -22,6 +22,7 @@ var _party_list: VBoxContainer
 var _enemy_list: VBoxContainer
 var _turn_label: Label
 var _status_label: Label
+var _plugin_label: Label
 var _action_panel: VBoxContainer
 var _target_panel: VBoxContainer
 var _log_label: RichTextLabel
@@ -79,6 +80,12 @@ func _build_ui() -> void:
 	_status_label.add_theme_font_size_override("font_size", 15)
 	_status_label.add_theme_color_override("font_color", COLOR_MUTED)
 	page.add_child(_status_label)
+
+	_plugin_label = Label.new()
+	_plugin_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_plugin_label.add_theme_font_size_override("font_size", 13)
+	_plugin_label.add_theme_color_override("font_color", COLOR_ACCENT)
+	page.add_child(_plugin_label)
 
 	var main := HBoxContainer.new()
 	main.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -177,6 +184,7 @@ func _make_panel() -> Panel:
 
 
 func _reset_battle() -> void:
+	PluginRegistry.reload_plugins()
 	_units = [
 		_make_unit("knight", "Knight", "party", "Frontline", 128, 12, 24, 6, 8, [
 			{"id": "slash", "name": "Slash", "type": "damage", "target": "enemy", "power": 18, "cost": 0, "text": "Reliable weapon hit."},
@@ -206,6 +214,19 @@ func _reset_battle() -> void:
 	_active_index = -1
 	_battle_over = false
 	_selected_action = {}
+	_update_plugin_label()
+
+	var roster_payload: Dictionary = PluginRegistry.run_hook("turn_rpg.build_roster", {
+		"units": _units.duplicate(true),
+		"log": [],
+	})
+	_units = roster_payload.get("units", _units)
+	_log_plugin_messages(roster_payload)
+
+	var start_payload: Dictionary = PluginRegistry.run_hook("turn_rpg.battle_started", {
+		"log": [],
+	})
+	_log_plugin_messages(start_payload)
 	_log("Battle started. Defeat all enemies.")
 	_advance_turn()
 
@@ -391,6 +412,16 @@ func _deal_damage(actor_index: int, target_index: int, action: Dictionary) -> vo
 	var damage: int = max(1, raw_damage)
 	if bool(target["guard"]):
 		damage = max(1, int(ceil(float(damage) * 0.5)))
+
+	var hook_payload: Dictionary = PluginRegistry.run_hook("turn_rpg.before_damage", {
+		"actor": actor.duplicate(true),
+		"target": target.duplicate(true),
+		"action": action.duplicate(true),
+		"damage": damage,
+		"log": [],
+	})
+	damage = max(1, int(hook_payload.get("damage", damage)))
+	_log_plugin_messages(hook_payload)
 
 	_units[target_index]["hp"] = max(0, int(target["hp"]) - damage)
 	_log("%s uses %s on %s for %d damage." % [actor["name"], action["name"], target["name"], damage])
@@ -627,6 +658,25 @@ func _log(text: String) -> void:
 	_log_lines.append(text)
 	if _log_lines.size() > 12:
 		_log_lines.pop_front()
+
+
+func _log_plugin_messages(payload: Dictionary) -> void:
+	var messages: Array = payload.get("log", [])
+	for message in messages:
+		_log(String(message))
+
+
+func _update_plugin_label() -> void:
+	var plugin_ids: Array[String] = PluginRegistry.get_loaded_plugin_ids()
+	var errors: Array[String] = PluginRegistry.get_load_errors()
+	var text := "Plugins: "
+	if plugin_ids.is_empty():
+		text += "none"
+	else:
+		text += ", ".join(plugin_ids)
+	if not errors.is_empty():
+		text += "  |  Plugin warnings: %d" % errors.size()
+	_plugin_label.text = text
 
 
 func _clear_actions() -> void:

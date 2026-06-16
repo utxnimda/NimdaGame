@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "external_balance_script",
+  "name": "External Balance Script",
+  "version": "0.1.0",
+  "description": "Example manifest for an editor-only external script adapter.",
+  "implementation": {
+    "type": "external_script",
+    "runtime": "editor_only",
+    "command": "python",
+    "args": [
+      "tools/plugins/external_balance_script.py"
+    ],
+    "append_context_json": true
+  },
+  "capabilities": [
+    "balance.tooling"
+  ],
+  "hooks": {
+    "turn_rpg.before_damage": {
+      "priority": 200
+    }
+  },
+  "config": {}
+}

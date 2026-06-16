@@ -59,6 +59,26 @@ It translates between:
 
 The binding layer should stay thin. It should not contain gameplay rules.
 
+### Plugin Layer
+
+Runtime plugins live under `game/plugins/` and are loaded by the Godot autoload `PluginRegistry`.
+
+Plugins can be implemented as:
+
+- GDScript objects
+- C++ GDExtension classes registered with Godot
+- External script adapters for editor-time tooling
+
+All implementations must expose the same hook contract:
+
+```text
+setup(manifest, config)
+get_plugin_info()
+handle_hook(hook_id, payload)
+```
+
+The plugin layer may modify gameplay payloads only through explicit hooks. Core rules that must be deterministic and portable should eventually move into `core/`, with GDScript plugins serving as prototype or adapter code.
+
 ### Python Tools Layer
 
 Python is used for development-time automation:

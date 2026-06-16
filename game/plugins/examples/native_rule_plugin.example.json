@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "native_rule_plugin",
+  "name": "Native Rule Plugin",
+  "version": "0.1.0",
+  "description": "Example manifest for a C++ GDExtension class that implements the plugin contract.",
+  "implementation": {
+    "type": "native",
+    "class_name": "NimdaNativeRulePlugin"
+  },
+  "capabilities": [
+    "battle.modifier"
+  ],
+  "hooks": {
+    "turn_rpg.before_damage": {
+      "priority": 50
+    }
+  },
+  "config": {}
+}
