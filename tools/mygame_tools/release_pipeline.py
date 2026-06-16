@@ -15,8 +15,10 @@ from typing import Iterable
 
 try:
     from mygame_tools.validate_plugins import validate_plugin_layout
+    from mygame_tools.ui_pipeline import validate_ui_pipeline
 except ModuleNotFoundError:
     from validate_plugins import validate_plugin_layout
+    from ui_pipeline import validate_ui_pipeline
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -152,6 +154,10 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
     plugin_result = validate_plugin_layout()
     errors.extend(plugin_result.errors)
     warnings.extend(plugin_result.warnings)
+
+    ui_result = validate_ui_pipeline()
+    errors.extend(ui_result.errors)
+    warnings.extend(ui_result.warnings)
 
     export_presets = config.godot_project_dir / "export_presets.cfg"
     if not export_presets.exists():

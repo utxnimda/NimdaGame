@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "neon_arcade",
+  "label": "Neon Arcade",
+  "reference_mode": "text_style",
+  "style_prompt": "sleek arcade RPG interface, dark graphite surfaces, cyan and amber accents, crisp bevels, high readability, minimal noise, no text baked into assets",
+  "negative_prompt": "blurred text, unreadable letters, watermark, logo, character art, photorealistic background",
+  "output_contract": {
+    "format": "png",
+    "transparent_background": true,
+    "safe_border_px": 8,
+    "naming": "{style_id}_{slot_id}.png"
+  }
+}

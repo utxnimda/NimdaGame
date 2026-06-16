@@ -71,6 +71,14 @@ Release smoke value:
 
 Use this category for gameplay that does not fit the first three groups but still shares framework systems.
 
+Current demo status:
+
+- UI Forge scene at `game/scenes/demos/ui_forge_demo.tscn`
+- Selects UI styles and layout templates
+- Generates provider-neutral prompt packs for AI image tools
+- Applies slot-based skins to templates
+- Saves locally customized templates after drag repositioning
+
 Recommended subtypes:
 
 - Tower defense
@@ -79,6 +87,7 @@ Recommended subtypes:
 - Roguelite reward drafts
 - Equipment and meta progression
 - Economy simulations
+- UI generation and layout tooling
 
 Release smoke value:
 

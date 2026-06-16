@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "ink_fantasy",
+  "label": "Ink Fantasy",
+  "font_color": "#F1E8D0",
+  "muted_color": "#B7A987",
+  "slots": {
+    "panel_primary": {
+      "color": "#2B2720",
+      "border": "#B08B4F"
+    },
+    "panel_secondary": {
+      "color": "#201D18",
+      "border": "#6D6044"
+    },
+    "button_primary": {
+      "color": "#3C5C4A",
+      "border": "#C1A05E"
+    },
+    "status_bar": {
+      "color": "#943F3A",
+      "border": "#C1A05E"
+    },
+    "icon_frame": {
+      "color": "#3A3327",
+      "border": "#7FA17B"
+    }
+  }
+}

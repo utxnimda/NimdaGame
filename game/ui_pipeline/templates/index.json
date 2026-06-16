@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {
+      "id": "rpg_battle_hud",
+      "label": "RPG Battle HUD",
+      "path": "res://ui_pipeline/templates/base/rpg_battle_hud.json"
+    },
+    {
+      "id": "dialog_choice",
+      "label": "Dialog Choice",
+      "path": "res://ui_pipeline/templates/base/dialog_choice.json"
+    }
+  ]
+}
