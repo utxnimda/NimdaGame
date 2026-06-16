@@ -11,6 +11,7 @@ var _subtitle_label: Label
 var _loop_label: Label
 var _systems_label: Label
 var _release_label: Label
+var _launch_button: Button
 var _board: Control
 
 func _ready() -> void:
@@ -104,6 +105,11 @@ func _build_ui() -> void:
 	_subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.add_child(_subtitle_label)
 
+	_launch_button = Button.new()
+	_launch_button.custom_minimum_size = Vector2(0, 44)
+	_launch_button.pressed.connect(_launch_selected_demo)
+	details.add_child(_launch_button)
+
 	_loop_label = _make_section_label()
 	details.add_child(_loop_label)
 
@@ -144,10 +150,27 @@ func _select_demo(index: int) -> void:
 	_systems_label.text = "Reusable Systems\n%s" % _bullet_lines(demo["systems"])
 	_release_label.text = "Release Smoke Checks\n%s" % _bullet_lines(demo["release_checks"])
 	_board.set_demo(demo)
+	_update_launch_button(demo)
 
 	for button_index in range(_buttons.size()):
 		var button := _buttons[button_index]
 		button.disabled = button_index == _selected_index
+
+
+func _update_launch_button(demo: Dictionary) -> void:
+	if demo.has("scene_path"):
+		_launch_button.text = "Play Demo"
+		_launch_button.disabled = false
+	else:
+		_launch_button.text = "Planning Only"
+		_launch_button.disabled = true
+
+
+func _launch_selected_demo() -> void:
+	var demo: Dictionary = _catalog[_selected_index]
+	if not demo.has("scene_path"):
+		return
+	get_tree().change_scene_to_file(demo["scene_path"])
 
 
 func _bullet_lines(values: Array) -> String:

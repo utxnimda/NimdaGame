@@ -19,7 +19,8 @@ The Godot project currently starts at a small Demo Hub with four categories:
 3. Tactics
 4. Systems Lab for tower defense, idle/incremental, cards, roguelite rewards, economy, and meta progression
 
-This hub is the first build smoke test. A release build should open the hub and allow every category to be selected.
+Turn RPG has a playable battle demo. The other categories are planning entries for future playable slices.
+This hub is the first build smoke test. A release build should open the hub, allow every category to be selected, and allow the Turn RPG demo to launch.
 
 ## Repository Layout
 

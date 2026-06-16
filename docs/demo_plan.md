@@ -8,6 +8,12 @@ The first demo is a centralized Demo Hub. It is intentionally small and asset-li
 
 Use this category for classic command-based RPG flow.
 
+Current demo status:
+
+- Playable battle scene at `game/scenes/demos/turn_rpg_demo.tscn`
+- Three party members versus three enemies
+- Player command selection, target selection, HP/MP, guard, heal, burn, enemy AI, victory, defeat, restart, and return to hub
+
 Representative systems:
 
 - Party and enemy formation

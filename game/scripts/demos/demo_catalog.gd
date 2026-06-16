@@ -5,7 +5,8 @@ static func get_categories() -> Array:
 		{
 			"id": "turn_rpg",
 			"title": "Turn RPG",
-			"summary": "Command selection, party roles, deterministic turn order, and a readable battle log.",
+			"summary": "Playable command battle with party roles, deterministic turn order, HP/MP, status ticks, and a readable battle log.",
+			"scene_path": "res://scenes/demos/turn_rpg_demo.tscn",
 			"loop": [
 				"Choose command",
 				"Resolve skill and status effects",
