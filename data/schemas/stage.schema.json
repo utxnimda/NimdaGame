@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nimdagame.local/schemas/stage.schema.json",
+  "title": "Stage",
+  "type": "object",
+  "required": ["id", "name"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^stage_[a-z0-9_]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "waves": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^wave_[a-z0-9_]+$"
+      },
+      "default": []
+    }
+  }
+}

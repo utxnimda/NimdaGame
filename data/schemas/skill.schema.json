@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nimdagame.local/schemas/skill.schema.json",
+  "title": "Skill",
+  "type": "object",
+  "required": ["id", "name", "target", "cooldown", "effects"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^skill_[a-z0-9_]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "enum": ["self", "ally", "enemy", "area"]
+    },
+    "cooldown": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "effects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "enum": ["damage", "heal", "status"]
+          },
+          "element": {
+            "type": "string"
+          },
+          "power": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status_id": {
+            "type": "string",
+            "pattern": "^buff_[a-z0-9_]+$"
+          },
+          "chance": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

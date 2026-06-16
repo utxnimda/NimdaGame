@@ -1,0 +1,13 @@
+[configuration]
+
+entry_symbol = "core_bridge_library_init"
+compatibility_minimum = "4.4"
+
+[libraries]
+
+windows.debug.x86_64 = "res://addons/core_bridge/bin/core_bridge.windows.debug.x86_64.dll"
+windows.release.x86_64 = "res://addons/core_bridge/bin/core_bridge.windows.release.x86_64.dll"
+linux.debug.x86_64 = "res://addons/core_bridge/bin/core_bridge.linux.debug.x86_64.so"
+linux.release.x86_64 = "res://addons/core_bridge/bin/core_bridge.linux.release.x86_64.so"
+macos.debug = "res://addons/core_bridge/bin/core_bridge.macos.debug.framework"
+macos.release = "res://addons/core_bridge/bin/core_bridge.macos.release.framework"

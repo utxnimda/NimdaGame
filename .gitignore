@@ -1,0 +1,41 @@
+# Godot
+.godot/
+*.translation
+export.cfg
+export_presets.cfg
+
+# Build outputs
+build/
+dist/
+out/
+bin/
+obj/
+!game/addons/core_bridge/bin/
+!game/addons/core_bridge/bin/.gitkeep
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake-build-*/
+compile_commands.json
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# IDE and OS
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+Desktop.ini
+
+# Generated runtime data is produced from data/raw.
+game/data/generated/*
+!game/data/generated/.gitkeep

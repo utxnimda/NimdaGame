@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nimdagame.local/schemas/unit.schema.json",
+  "title": "Unit",
+  "type": "object",
+  "required": ["id", "name", "stats"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^unit_[a-z0-9_]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "stats": {
+      "type": "object",
+      "required": ["hp", "attack", "defense"],
+      "additionalProperties": false,
+      "properties": {
+        "hp": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "attack": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "defense": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^skill_[a-z0-9_]+$"
+      },
+      "uniqueItems": true,
+      "default": []
+    }
+  }
+}

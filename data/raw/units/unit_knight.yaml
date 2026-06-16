@@ -1,0 +1,11 @@
+id: unit_knight
+name: Knight
+tags:
+  - hero
+  - melee
+stats:
+  hp: 120
+  attack: 18
+  defense: 6
+skills:
+  - skill_slash
