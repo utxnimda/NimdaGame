@@ -53,7 +53,7 @@ python tools/mygame_tools/release_pipeline.py plan
 python tools/mygame_tools/release_pipeline.py check
 python tools/mygame_tools/validate_plugins.py
 python tools/mygame_tools/ui_pipeline.py validate
-python tools/mygame_tools/ui_ai_provider.py check
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
 python tools/mygame_tools/release_pipeline.py notes --version 0.1.0
 ```
 

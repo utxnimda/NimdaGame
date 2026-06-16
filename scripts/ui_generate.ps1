@@ -7,7 +7,8 @@ param(
     [string]$Size = "",
     [string]$Quality = "",
     [string]$OutputFormat = "",
-    [string]$Background = ""
+    [string]$Background = "",
+    [string]$Provider = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,7 +16,13 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 $Tool = Join-Path $RepoRoot "tools\mygame_tools\ui_ai_provider.py"
 
 $Command = if ($DryRun) { "dry-run" } else { "generate" }
-$ArgsList = @($Tool, $Command, "--style", $Style)
+$ArgsList = @($Tool)
+
+if ($Provider -ne "") {
+    $ArgsList += @("--provider", $Provider)
+}
+
+$ArgsList += @($Command, "--style", $Style)
 
 foreach ($SlotId in $Slot) {
     $ArgsList += @("--slot", $SlotId)

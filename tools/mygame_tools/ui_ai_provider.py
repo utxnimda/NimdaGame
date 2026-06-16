@@ -40,6 +40,7 @@ except ModuleNotFoundError:
 
 
 DEFAULT_PROVIDER_CONFIG = REPO_ROOT / "tools" / "ai_providers" / "openai_images.json"
+PROVIDER_CONFIG_ROOT = REPO_ROOT / "tools" / "ai_providers"
 ENV_FILE = REPO_ROOT / ".env"
 
 
@@ -62,6 +63,7 @@ class ProviderConfig:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--provider", default=None, help="Provider id from tools/ai_providers, for example gemini_images.")
     parser.add_argument("--provider-config", default=str(DEFAULT_PROVIDER_CONFIG))
     parser.add_argument("--env-file", default=str(ENV_FILE))
 
@@ -81,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     load_env_file(Path(args.env_file))
-    provider = load_provider_config(Path(args.provider_config))
+    provider = load_provider_config(resolve_provider_config(args.provider, Path(args.provider_config)))
     return args.func(args, provider)
 
 
@@ -122,14 +124,14 @@ def cmd_dry_run(args: argparse.Namespace, provider: ProviderConfig) -> int:
     print(f"Provider: {provider.label}")
     print(f"Model: {resolve_model(provider, args.model)}")
     print(f"Output root: {Path(args.output_root) / args.style / 'ai'}")
+    reference_image = resolve_reference_image(args, prompt_pack)
     for prompt in prompts:
-        request = build_openai_image_request(provider, args, prompt)
+        request = build_provider_image_request(provider, args, prompt, reference_image)
         print("")
         print(f"Asset: {prompt.get('asset_id', prompt['slot_id'])}")
         if prompt.get("component_id"):
             print(f"Component: {prompt['component_id']}.{prompt.get('state', 'normal')}")
-        print(json.dumps({k: v for k, v in request.items() if k != "prompt"}, indent=2))
-        reference_image = resolve_reference_image(args, prompt_pack)
+        print(json.dumps(printable_request(request), indent=2))
         if reference_image:
             print(f"Reference image: {relative(reference_image)}")
         print(f"Prompt: {prompt['prompt']}")
@@ -150,13 +152,10 @@ def cmd_generate(args: argparse.Namespace, provider: ProviderConfig) -> int:
 
     generated: list[dict[str, str]] = []
     for prompt in prompts:
-        request_payload = build_openai_image_request(provider, args, prompt)
+        request_payload = build_provider_image_request(provider, args, prompt, reference_image)
         asset_id = str(prompt.get("asset_id", prompt["slot_id"]))
         print(f"Generating {asset_id}...")
-        if reference_image is not None:
-            image_bytes = call_openai_image_edit(provider, api_key, request_payload, reference_image)
-        else:
-            image_bytes = call_openai_images(provider, api_key, request_payload)
+        image_bytes = call_provider_images(provider, api_key, request_payload, reference_image)
         output_path = output_dir / prompt["output_name"]
         output_path.write_bytes(image_bytes)
         generated.append(
@@ -194,6 +193,17 @@ def cmd_generate(args: argparse.Namespace, provider: ProviderConfig) -> int:
     return 0
 
 
+def resolve_provider_config(provider_id: str | None, provider_config: Path) -> Path:
+    if provider_id:
+        return PROVIDER_CONFIG_ROOT / f"{provider_id}.json"
+
+    env_provider = os.environ.get("NIMDAGAME_AI_PROVIDER", "")
+    if env_provider and resolve_path(provider_config) == DEFAULT_PROVIDER_CONFIG:
+        return PROVIDER_CONFIG_ROOT / f"{env_provider}.json"
+
+    return provider_config
+
+
 def load_env_file(path: Path) -> None:
     if not path.exists():
         return
@@ -209,7 +219,12 @@ def load_env_file(path: Path) -> None:
 
 
 def load_provider_config(path: Path) -> ProviderConfig:
-    raw = read_json(resolve_path(path))
+    resolved_path = resolve_path(path)
+    if not resolved_path.exists():
+        raise SystemExit(f"Provider config does not exist: {relative(resolved_path)}")
+    raw = read_json(resolved_path)
+    if not raw:
+        raise SystemExit(f"Provider config is empty or invalid: {relative(resolved_path)}")
     return ProviderConfig(
         id=str(raw.get("id", "openai_images")),
         label=str(raw.get("label", "OpenAI Images")),
@@ -225,6 +240,21 @@ def load_provider_config(path: Path) -> ProviderConfig:
         default_background=str(raw.get("default_background", "transparent")),
         timeout_seconds=int(raw.get("timeout_seconds", 180)),
     )
+
+
+def printable_request(payload: dict[str, Any]) -> dict[str, Any]:
+    preview = {
+        key: value
+        for key, value in payload.items()
+        if key not in {"prompt", "contents"} and not key.startswith("_")
+    }
+    if "contents" in payload:
+        parts = payload.get("contents", [{}])[0].get("parts", [])
+        preview["contents"] = [
+            "text prompt" if "text" in part else f"inline image ({part.get('inlineData', {}).get('mimeType', 'unknown')})"
+            for part in parts
+        ]
+    return preview
 
 
 def prompt_pack_for_style(style_id: str, legacy_slots: bool = False) -> dict[str, Any]:
@@ -289,6 +319,19 @@ def prompt_matches(prompt: dict[str, Any], requested_id: str) -> bool:
     return False
 
 
+def build_provider_image_request(
+    provider: ProviderConfig,
+    args: argparse.Namespace,
+    prompt: dict[str, Any],
+    reference_image: Path | None,
+) -> dict[str, Any]:
+    if provider.provider == "openai":
+        return build_openai_image_request(provider, args, prompt)
+    if provider.provider == "google_gemini":
+        return build_gemini_image_request(provider, args, prompt, reference_image)
+    raise SystemExit(f"Unsupported AI image provider: {provider.provider}")
+
+
 def build_openai_image_request(
     provider: ProviderConfig,
     args: argparse.Namespace,
@@ -311,6 +354,32 @@ def build_openai_image_request(
     return payload
 
 
+def build_gemini_image_request(
+    provider: ProviderConfig,
+    args: argparse.Namespace,
+    prompt: dict[str, Any],
+    reference_image: Path | None,
+) -> dict[str, Any]:
+    parts: list[dict[str, Any]] = [{"text": prompt["prompt"]}]
+    if reference_image is not None:
+        parts.append(
+            {
+                "inlineData": {
+                    "mimeType": mime_type_for_path(reference_image),
+                    "data": base64.b64encode(reference_image.read_bytes()).decode("ascii"),
+                }
+            }
+        )
+
+    return {
+        "_model": resolve_model(provider, args.model),
+        "contents": [{"parts": parts}],
+        "generationConfig": {
+            "responseModalities": ["TEXT", "IMAGE"],
+        },
+    }
+
+
 def resolve_model(provider: ProviderConfig, explicit_model: str | None) -> str:
     if explicit_model:
         return explicit_model
@@ -318,6 +387,21 @@ def resolve_model(provider: ProviderConfig, explicit_model: str | None) -> str:
     if env_model:
         return env_model
     return provider.default_model
+
+
+def call_provider_images(
+    provider: ProviderConfig,
+    api_key: str,
+    payload: dict[str, Any],
+    reference_image: Path | None,
+) -> bytes:
+    if provider.provider == "openai":
+        if reference_image is not None:
+            return call_openai_image_edit(provider, api_key, payload, reference_image)
+        return call_openai_images(provider, api_key, payload)
+    if provider.provider == "google_gemini":
+        return call_gemini_images(provider, api_key, payload)
+    raise SystemExit(f"Unsupported AI image provider: {provider.provider}")
 
 
 def call_openai_images(provider: ProviderConfig, api_key: str, payload: dict[str, Any]) -> bytes:
@@ -383,6 +467,58 @@ def call_openai_image_edit(
     if not data or "b64_json" not in data[0]:
         raise SystemExit(f"OpenAI image edit response did not contain data[0].b64_json: {response_body}")
     return base64.b64decode(data[0]["b64_json"])
+
+
+def call_gemini_images(provider: ProviderConfig, api_key: str, payload: dict[str, Any]) -> bytes:
+    model = str(payload.get("_model", provider.default_model))
+    request_payload = {key: value for key, value in payload.items() if not key.startswith("_")}
+    endpoint = provider.endpoint.replace("{model}", model)
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(request_payload).encode("utf-8"),
+        headers={
+            "x-goog-api-key": api_key,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=provider.timeout_seconds) as response:
+            response_body = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"Gemini image request failed: HTTP {exc.code}\n{body}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"Gemini image request failed: {exc}") from exc
+
+    parsed = json.loads(response_body)
+    image_bytes = extract_gemini_image_bytes(parsed)
+    if image_bytes is None:
+        text = extract_gemini_text(parsed)
+        message = f" Gemini text response: {text}" if text else ""
+        raise SystemExit(f"Gemini image response did not contain inline image data.{message}")
+    return image_bytes
+
+
+def extract_gemini_image_bytes(parsed: dict[str, Any]) -> bytes | None:
+    for candidate in parsed.get("candidates", []):
+        content = candidate.get("content", {})
+        for part in content.get("parts", []):
+            inline_data = part.get("inlineData") or part.get("inline_data")
+            if isinstance(inline_data, dict) and inline_data.get("data"):
+                return base64.b64decode(inline_data["data"])
+    return None
+
+
+def extract_gemini_text(parsed: dict[str, Any]) -> str:
+    parts: list[str] = []
+    for candidate in parsed.get("candidates", []):
+        content = candidate.get("content", {})
+        for part in content.get("parts", []):
+            text = part.get("text")
+            if text:
+                parts.append(str(text))
+    return "\n".join(parts)
 
 
 def build_multipart_body(

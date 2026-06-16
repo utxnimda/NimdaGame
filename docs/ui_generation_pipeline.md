@@ -63,10 +63,11 @@ dist/ui_pipeline/<style_id>/
 
 ## AI Provider Setup
 
-The default provider is OpenAI Images:
+Provider configs live in:
 
 ```text
 tools/ai_providers/openai_images.json
+tools/ai_providers/gemini_images.json
 ```
 
 Local token setup:
@@ -78,9 +79,11 @@ copy .env.example .env
 Then edit `.env`:
 
 ```text
-OPENAI_API_KEY=your_api_key_here
-NIMDAGAME_AI_PROVIDER=openai_images
+OPENAI_API_KEY=
+GEMINI_API_KEY=your_gemini_api_key_here
+NIMDAGAME_AI_PROVIDER=gemini_images
 NIMDAGAME_OPENAI_IMAGE_MODEL=gpt-image-1
+NIMDAGAME_GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
 ```
 
 `.env` is ignored by Git.
@@ -89,9 +92,11 @@ Check provider readiness:
 
 ```powershell
 python tools/mygame_tools/ui_ai_provider.py check
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
+python tools/mygame_tools/ui_ai_provider.py --provider openai_images check
 ```
 
-The OpenAI Image API is used for single-prompt image generation. The provider config is model-driven so the default model can be changed without code edits.
+Gemini is the default local provider in `.env.example`. The Gemini adapter uses the Gemini API `generateContent` image endpoint with `gemini-3.1-flash-image` by default. OpenAI Images remains available through `--provider openai_images` or `NIMDAGAME_AI_PROVIDER=openai_images`.
 
 ## Step 1: Define The UI Kit Contract
 
@@ -161,12 +166,25 @@ Then map those files in:
 game/ui_pipeline/styles/<style_id>/skin.json
 ```
 
-Generate with the OpenAI provider:
+Generate with the configured provider:
 
 ```powershell
 python tools/mygame_tools/ui_ai_provider.py dry-run --style neon_arcade
 python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --slot button_primary
 python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --write-skin
+```
+
+Generate with Gemini explicitly:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images dry-run --style megami_magazine --slot button_primary
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images generate --style megami_magazine --slot button_primary.normal --write-skin
+```
+
+Generate with OpenAI explicitly:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py --provider openai_images dry-run --style megami_magazine --slot button_primary
 ```
 
 `--slot button_primary` selects every state for that component. You can also target a single asset or state, for example:
@@ -179,9 +197,9 @@ python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --sl
 PowerShell wrapper:
 
 ```powershell
-scripts/ui_generate.ps1 -DryRun -Style neon_arcade
-scripts/ui_generate.ps1 -Style neon_arcade -Slot button_primary
-scripts/ui_generate.ps1 -Style neon_arcade -WriteSkin
+scripts/ui_generate.ps1 -DryRun -Provider gemini_images -Style neon_arcade
+scripts/ui_generate.ps1 -Provider gemini_images -Style neon_arcade -Slot button_primary
+scripts/ui_generate.ps1 -Provider gemini_images -Style neon_arcade -WriteSkin
 ```
 
 Generated files are written to:
@@ -293,7 +311,7 @@ Generate AI assets for this style after API billing is available:
 ```powershell
 python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine
 python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary
-python tools/mygame_tools/ui_ai_provider.py generate --style megami_magazine --write-skin
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images generate --style megami_magazine --write-skin
 ```
 
 ## Tooling
@@ -306,7 +324,8 @@ python tools/mygame_tools/ui_pipeline.py prompt-pack --style megami_magazine
 python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade --legacy-slots
 python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
 python tools/mygame_tools/ui_ai_provider.py check
-python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
+python tools/mygame_tools/ui_ai_provider.py --provider gemini_images dry-run --style megami_magazine --slot button_primary
 ```
 
 The release pipeline also runs UI pipeline validation:
