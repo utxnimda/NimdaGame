@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nimdagame.local/schemas/ui_style_bible.schema.json",
+  "title": "UI Style Bible",
+  "type": "object",
+  "required": ["schema_version", "style_id", "palette", "motifs", "materials", "layout_language", "component_rules", "avoid"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "style_id": { "type": "string" },
+    "palette": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "hex", "usage"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string" },
+          "hex": { "type": "string" },
+          "usage": { "type": "string" }
+        }
+      }
+    },
+    "motifs": { "type": "array", "items": { "type": "string" } },
+    "materials": { "type": "array", "items": { "type": "string" } },
+    "layout_language": { "type": "array", "items": { "type": "string" } },
+    "component_rules": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "avoid": { "type": "array", "items": { "type": "string" } }
+  }
+}

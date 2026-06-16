@@ -12,6 +12,25 @@ game/data/generated/*.json  Runtime data consumed by Godot
 
 The C++ core and Godot runtime should not parse YAML directly.
 
+UI pipeline data is authored directly as JSON because Godot consumes it at edit/runtime:
+
+```text
+game/ui_pipeline/component_catalog.json
+game/ui_pipeline/styles/<style_id>/style.json
+game/ui_pipeline/styles/<style_id>/style_bible.json
+game/ui_pipeline/styles/<style_id>/skin.json
+game/ui_pipeline/templates/**/*.json
+```
+
+Relevant schemas:
+
+```text
+data/schemas/ui_component_catalog.schema.json
+data/schemas/ui_style.schema.json
+data/schemas/ui_style_bible.schema.json
+data/schemas/ui_template.schema.json
+```
+
 ## YAML Rules
 
 To keep YAML predictable, use a small subset:

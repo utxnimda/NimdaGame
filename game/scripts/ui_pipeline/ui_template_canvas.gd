@@ -88,17 +88,17 @@ func _draw() -> void:
 
 func _draw_node(index: int, node: Dictionary) -> void:
 	var rect: Rect2 = _node_screen_rect(index)
-	var slot: String = String(node.get("slot", "panel_secondary"))
-	var slot_style: Dictionary = _slot_style(slot)
+	var node_type: String = String(node.get("type", "panel"))
+	var slot_style: Dictionary = _node_style(node, _default_state_for_node_type(node_type))
 	var text_color: Color = _color_from_hex(String(_skin.get("font_color", "#EEF4F2")), Color(0.95, 0.96, 0.92))
 	var border_color: Color = _color_from_hex(String(slot_style.get("border", "#4C585C")), Color(0.28, 0.32, 0.32))
-	var fill_color: Color = _color_from_hex(String(slot_style.get("color", "#182024")), Color(0.11, 0.13, 0.14))
+	var fill_color: Color = _color_from_hex(String(slot_style.get("tint", slot_style.get("color", "#182024"))), Color(0.11, 0.13, 0.14))
 
 	_draw_slot_background(rect, slot_style, fill_color, border_color)
 
-	match String(node.get("type", "panel")):
+	match node_type:
 		"bar":
-			_draw_bar(rect, fill_color, border_color)
+			_draw_bar(rect, node, fill_color, border_color)
 		"icon":
 			_draw_centered_text(rect, String(node.get("text", "")), text_color)
 		"button":
@@ -114,18 +114,24 @@ func _draw_slot_background(rect: Rect2, slot_style: Dictionary, fill_color: Colo
 	var image_path: String = String(slot_style.get("image", ""))
 	var texture: Texture2D = _load_texture(image_path)
 	if texture != null:
-		draw_texture_rect(texture, rect, false)
+		draw_texture_rect(texture, rect, false, _texture_modulate(slot_style))
 	else:
 		draw_rect(rect, fill_color, true)
 		draw_rect(rect, border_color, false, 2.0)
 
 
-func _draw_bar(rect: Rect2, fill_color: Color, border_color: Color) -> void:
+func _draw_bar(rect: Rect2, node: Dictionary, fill_color: Color, border_color: Color) -> void:
 	var inner: Rect2 = rect.grow(-6)
 	draw_rect(inner, Color(0.08, 0.09, 0.10), true)
 	var fill_rect: Rect2 = inner
 	fill_rect.size.x *= 0.68
-	draw_rect(fill_rect, fill_color.lightened(0.16), true)
+	var fill_style: Dictionary = _node_style(node, "fill")
+	var fill_texture: Texture2D = _load_texture(String(fill_style.get("image", "")))
+	if fill_texture != null:
+		draw_texture_rect(fill_texture, fill_rect, false, _texture_modulate(fill_style))
+	else:
+		var bar_fill: Color = _color_from_hex(String(fill_style.get("tint", fill_style.get("color", ""))), fill_color.lightened(0.16))
+		draw_rect(fill_rect, bar_fill, true)
 	draw_rect(rect, border_color, false, 2.0)
 
 
@@ -168,6 +174,46 @@ func _canvas_size() -> Vector2:
 func _slot_style(slot: String) -> Dictionary:
 	var slots: Dictionary = _skin.get("slots", {})
 	return slots.get(slot, {})
+
+
+func _node_style(node: Dictionary, state: String) -> Dictionary:
+	var slot_id: String = String(node.get("slot", "panel_secondary"))
+	var component_id: String = String(node.get("component", slot_id))
+	var merged: Dictionary = _slot_style(slot_id).duplicate(true)
+	var component_style: Dictionary = _component_state_style(component_id, state)
+	for key in component_style.keys():
+		merged[key] = component_style[key]
+	return merged
+
+
+func _component_state_style(component_id: String, state: String) -> Dictionary:
+	var components: Dictionary = _skin.get("components", {})
+	var component: Dictionary = components.get(component_id, {})
+	if component.is_empty():
+		return {}
+
+	var states: Dictionary = component.get("states", {})
+	var state_style: Dictionary = states.get(state, {})
+	if state_style.is_empty() and state != "normal":
+		state_style = states.get("normal", {})
+	if state_style.is_empty() and state == "frame":
+		state_style = states.get("normal", {})
+	return state_style
+
+
+func _default_state_for_node_type(node_type: String) -> String:
+	match node_type:
+		"bar":
+			return "frame"
+		_:
+			return "normal"
+
+
+func _texture_modulate(style: Dictionary) -> Color:
+	var tint: String = String(style.get("tint", ""))
+	if tint.is_empty():
+		return Color.WHITE
+	return _color_from_hex(tint, Color.WHITE)
 
 
 func _load_texture(path: String) -> Texture2D:

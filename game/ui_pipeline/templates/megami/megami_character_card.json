@@ -7,6 +7,7 @@
     {
       "id": "card_base",
       "type": "panel",
+      "component": "panel_primary",
       "slot": "panel_primary",
       "rect": [166, 34, 628, 460],
       "text": "Character Feature"
@@ -14,6 +15,7 @@
     {
       "id": "portrait_main",
       "type": "icon",
+      "component": "portrait_frame",
       "slot": "icon_frame",
       "rect": [212, 82, 212, 270],
       "text": "Portrait"
@@ -21,6 +23,7 @@
     {
       "id": "name_plate",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [458, 86, 274, 58],
       "text": "Hero Name"
@@ -28,6 +31,7 @@
     {
       "id": "bio_panel",
       "type": "panel",
+      "component": "dialog_box",
       "slot": "panel_secondary",
       "rect": [456, 164, 276, 130],
       "text": "Profile"
@@ -35,6 +39,7 @@
     {
       "id": "bond_bar",
       "type": "bar",
+      "component": "status_bar",
       "slot": "status_bar",
       "rect": [456, 322, 276, 28],
       "text": "Bond"
@@ -42,6 +47,7 @@
     {
       "id": "skill_a",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [216, 386, 160, 44],
       "text": "Skill A"
@@ -49,6 +55,7 @@
     {
       "id": "skill_b",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [400, 386, 160, 44],
       "text": "Skill B"
@@ -56,6 +63,7 @@
     {
       "id": "skill_c",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [584, 386, 160, 44],
       "text": "Skill C"

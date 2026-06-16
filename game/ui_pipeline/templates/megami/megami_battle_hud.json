@@ -7,6 +7,7 @@
     {
       "id": "cover_panel",
       "type": "panel",
+      "component": "panel_primary",
       "slot": "panel_primary",
       "rect": [24, 22, 590, 314],
       "text": "Cover Feature"
@@ -14,6 +15,7 @@
     {
       "id": "polaroid_enemy_a",
       "type": "icon",
+      "component": "portrait_frame",
       "slot": "icon_frame",
       "rect": [418, 58, 86, 108],
       "text": "E1"
@@ -21,6 +23,7 @@
     {
       "id": "polaroid_enemy_b",
       "type": "icon",
+      "component": "portrait_frame",
       "slot": "icon_frame",
       "rect": [506, 160, 86, 108],
       "text": "E2"
@@ -28,6 +31,7 @@
     {
       "id": "memory_panel",
       "type": "panel",
+      "component": "panel_secondary",
       "slot": "panel_secondary",
       "rect": [34, 360, 354, 144],
       "text": "Collected Memories"
@@ -35,6 +39,7 @@
     {
       "id": "hp_strip",
       "type": "bar",
+      "component": "status_bar",
       "slot": "status_bar",
       "rect": [62, 430, 278, 24],
       "text": "HP"
@@ -42,6 +47,7 @@
     {
       "id": "command_panel",
       "type": "panel",
+      "component": "dialog_box",
       "slot": "panel_secondary",
       "rect": [420, 356, 516, 152],
       "text": "Special Art"
@@ -49,6 +55,7 @@
     {
       "id": "attack_button",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [450, 414, 146, 46],
       "text": "Attack"
@@ -56,6 +63,7 @@
     {
       "id": "skill_button",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [614, 414, 146, 46],
       "text": "Skill"
@@ -63,6 +71,7 @@
     {
       "id": "item_button",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [778, 414, 126, 46],
       "text": "Item"

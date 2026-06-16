@@ -4,10 +4,12 @@ UI Forge standardizes this flow:
 
 ```text
 style or reference image
-  -> AI prompt pack
-  -> generated UI art slots
+  -> style bible
+  -> component catalog
+  -> UI kit prompt pack
+  -> generated component/state art
   -> layout template
-  -> one-click skin preview
+  -> one-click skin preview or compiled skin
   -> saved custom template
 ```
 
@@ -29,12 +31,15 @@ game/plugins/enabled_plugins.json
 
 ```text
 game/ui_pipeline/
-  asset_slots.json                  Required UI image slots
+  asset_slots.json                  Legacy required UI image slots
+  component_catalog.json            Canonical reusable UI components and states
   styles/index.json                 Style registry
   styles/<style_id>/style.json      AI style prompt and output contract
-  styles/<style_id>/skin.json       Slot-to-image/color mapping
+  styles/<style_id>/style_bible.json Palette, motifs, materials, and component rules
+  styles/<style_id>/skin.json       Component/state skin plus legacy slot fallback
   templates/index.json              Template registry
   templates/base/*.json             Versioned base layouts
+  compiled/<style_id>/*             Normalized UI kit skins
   generated/<style_id>/*            Generated or placeholder UI art
 ```
 
@@ -88,7 +93,19 @@ python tools/mygame_tools/ui_ai_provider.py check
 
 The OpenAI Image API is used for single-prompt image generation. The provider config is model-driven so the default model can be changed without code edits.
 
-## Step 1: Generate UI Art With AI
+## Step 1: Define The UI Kit Contract
+
+`component_catalog.json` is the stable contract for AI generation and runtime usage. Each component declares:
+
+- `id`, for example `button_primary`
+- `kind`, for example `button`, `panel`, `bar`, `icon`, or `decor`
+- required visual states, for example `normal`, `hover`, `pressed`, `disabled`
+- `nine_patch` margins for later stretch-safe rendering
+- a component-specific prompt fragment
+
+This is what prevents AI generation from becoming "one picture with changed colors". The pipeline asks for concrete reusable pieces and states.
+
+## Step 2: Describe The Style
 
 Define a style:
 
@@ -103,10 +120,33 @@ The style contains:
 - optional reference-image metadata
 - output format and naming convention
 
+For custom styles, also add:
+
+```text
+game/ui_pipeline/styles/<style_id>/style_bible.json
+```
+
+The style bible breaks the reference image into reusable rules:
+
+- palette
+- motifs
+- materials
+- layout language
+- component rules
+- avoid list
+
 Generate a prompt pack:
 
 ```powershell
 python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade
+```
+
+By default this creates a component UI Kit prompt pack. Use `--legacy-slots` only when you need the old slot-based prompts.
+
+Inspect the component/state plan:
+
+```powershell
+python tools/mygame_tools/ui_pipeline.py kit-plan --style megami_magazine
 ```
 
 The output is provider-neutral JSON and Markdown. Feed each prompt to the chosen AI image tool and place the generated files into:
@@ -129,6 +169,13 @@ python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --slot 
 python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --write-skin
 ```
 
+`--slot button_primary` selects every state for that component. You can also target a single asset or state, for example:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary.hover
+python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary_hover
+```
+
 PowerShell wrapper:
 
 ```powershell
@@ -143,7 +190,7 @@ Generated files are written to:
 game/ui_pipeline/generated/<style_id>/ai/
 ```
 
-## Step 2: Build Or Save Layout Templates
+## Step 3: Build Or Save Layout Templates
 
 Base templates live in:
 
@@ -163,6 +210,7 @@ Each template is JSON:
     {
       "id": "attack_button",
       "type": "button",
+      "component": "button_primary",
       "slot": "button_primary",
       "rect": [466, 418, 142, 42],
       "text": "Attack"
@@ -171,25 +219,40 @@ Each template is JSON:
 }
 ```
 
+`component` is preferred. `slot` remains as a compatibility fallback for older skins.
+
 In UI Forge, drag nodes on the preview canvas and save a custom copy. The custom save path uses Godot `user://`, so it is safe for local experiments and packaged builds.
 
-## Step 3: Apply Generated Art
+## Step 4: Apply Generated Art
 
-`skin.json` maps template slots to generated UI art:
+`skin.json` maps template components and states to generated UI art:
 
 ```json
 {
-  "slots": {
+  "components": {
     "button_primary": {
-      "image": "res://ui_pipeline/generated/neon_arcade/button_primary.svg",
-      "color": "#1F6570",
-      "border": "#E1B44C"
+      "kind": "button",
+      "nine_patch": [30, 20, 30, 20],
+      "states": {
+        "normal": {
+          "image": "res://ui_pipeline/generated/megami_magazine/ai/megami_button_primary_normal.png"
+        },
+        "hover": {
+          "image": "res://ui_pipeline/generated/megami_magazine/ai/megami_button_primary_hover.png"
+        }
+      }
     }
   }
 }
 ```
 
-UI Forge loads the selected template, loads the selected skin, and replaces each slot with the mapped image. If an image is missing, it falls back to the color and border values.
+UI Forge loads the selected template, loads the selected skin, and replaces each component with the mapped image. If a component image is missing, it falls back to legacy slot color and border values.
+
+Compile a normalized skin:
+
+```powershell
+python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
+```
 
 ## Godot Demo
 
@@ -229,6 +292,7 @@ Generate AI assets for this style after API billing is available:
 
 ```powershell
 python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine
+python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary
 python tools/mygame_tools/ui_ai_provider.py generate --style megami_magazine --write-skin
 ```
 
@@ -237,9 +301,12 @@ python tools/mygame_tools/ui_ai_provider.py generate --style megami_magazine --w
 ```powershell
 python tools/mygame_tools/ui_pipeline.py list
 python tools/mygame_tools/ui_pipeline.py validate
-python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade
+python tools/mygame_tools/ui_pipeline.py kit-plan --style megami_magazine
+python tools/mygame_tools/ui_pipeline.py prompt-pack --style megami_magazine
+python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade --legacy-slots
+python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
 python tools/mygame_tools/ui_ai_provider.py check
-python tools/mygame_tools/ui_ai_provider.py dry-run --style neon_arcade
+python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine --slot button_primary
 ```
 
 The release pipeline also runs UI pipeline validation:

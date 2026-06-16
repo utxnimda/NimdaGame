@@ -14,6 +14,8 @@ GAME_ROOT = REPO_ROOT / "game"
 STYLE_INDEX_PATH = GAME_ROOT / "ui_pipeline" / "styles" / "index.json"
 TEMPLATE_INDEX_PATH = GAME_ROOT / "ui_pipeline" / "templates" / "index.json"
 ASSET_SLOTS_PATH = GAME_ROOT / "ui_pipeline" / "asset_slots.json"
+COMPONENT_CATALOG_PATH = GAME_ROOT / "ui_pipeline" / "component_catalog.json"
+COMPILED_ROOT = GAME_ROOT / "ui_pipeline" / "compiled"
 
 
 @dataclass(frozen=True)
@@ -35,7 +37,17 @@ def main(argv: list[str] | None = None) -> int:
     prompt_cmd = subparsers.add_parser("prompt-pack", help="Generate an AI prompt pack.")
     prompt_cmd.add_argument("--style", default="neon_arcade")
     prompt_cmd.add_argument("--output", default=str(REPO_ROOT / "dist" / "ui_pipeline"))
+    prompt_cmd.add_argument("--legacy-slots", action="store_true", help="Generate old slot prompts instead of full UI kit prompts.")
     prompt_cmd.set_defaults(func=cmd_prompt_pack)
+
+    kit_cmd = subparsers.add_parser("kit-plan", help="Print the component/state generation plan.")
+    kit_cmd.add_argument("--style", default="megami_magazine")
+    kit_cmd.set_defaults(func=cmd_kit_plan)
+
+    compile_cmd = subparsers.add_parser("compile-kit", help="Compile a style skin into a normalized UI kit skin.")
+    compile_cmd.add_argument("--style", default="megami_magazine")
+    compile_cmd.add_argument("--output", default=str(COMPILED_ROOT))
+    compile_cmd.set_defaults(func=cmd_compile_kit)
 
     args = parser.parse_args(argv)
     return args.func(args)
@@ -73,8 +85,12 @@ def cmd_prompt_pack(args: argparse.Namespace) -> int:
         return 1
 
     style = read_json(resolve_resource_path(styles[args.style]["style_path"]))
-    asset_slots = read_json(ASSET_SLOTS_PATH)["slots"]
-    prompt_pack = build_prompt_pack(style, asset_slots)
+    if args.legacy_slots:
+        asset_slots = read_json(ASSET_SLOTS_PATH)["slots"]
+        prompt_pack = build_prompt_pack(style, asset_slots)
+    else:
+        components = load_components()
+        prompt_pack = build_kit_prompt_pack(style, components)
 
     output_dir = Path(args.output) / args.style
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -88,6 +104,31 @@ def cmd_prompt_pack(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_kit_plan(args: argparse.Namespace) -> int:
+    style = style_by_id(args.style)
+    components = load_components()
+    prompt_pack = build_kit_prompt_pack(style, components)
+    print(f"Style: {prompt_pack['style_label']} ({prompt_pack['style_id']})")
+    for prompt in prompt_pack["prompts"]:
+        print(f"- {prompt['component_id']}.{prompt['state']} -> {prompt['output_name']}")
+    return 0
+
+
+def cmd_compile_kit(args: argparse.Namespace) -> int:
+    style_entry = style_entry_by_id(args.style)
+    style = read_json(resolve_resource_path(style_entry["style_path"]))
+    skin = read_json(resolve_resource_path(style_entry["skin_path"]))
+    components = load_components()
+    compiled = compile_skin(style, skin, components)
+
+    output_dir = Path(args.output) / args.style
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / "compiled_skin.json"
+    output_path.write_text(json.dumps(compiled, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"Wrote {relative(output_path)}")
+    return 0
+
+
 def validate_ui_pipeline() -> ValidationResult:
     errors: list[str] = []
     warnings: list[str] = []
@@ -95,7 +136,10 @@ def validate_ui_pipeline() -> ValidationResult:
     styles = load_styles(errors)
     templates = load_templates(errors)
     asset_slots = load_asset_slots(errors)
+    components = load_components(errors)
     slot_ids = {slot.get("id") for slot in asset_slots if isinstance(slot, dict)}
+    component_ids = {component.get("id") for component in components if isinstance(component, dict)}
+    _validate_components(components, errors)
 
     seen_styles: set[str] = set()
     for style_entry in styles:
@@ -106,7 +150,7 @@ def validate_ui_pipeline() -> ValidationResult:
         style = read_json(resolve_resource_path(style_path), errors)
         skin = read_json(resolve_resource_path(skin_path), errors)
         _validate_style(style_id, style, errors)
-        _validate_skin(style_id, skin, slot_ids, errors, warnings)
+        _validate_skin(style_id, skin, slot_ids, component_ids, errors, warnings)
 
     seen_templates: set[str] = set()
     for template_entry in templates:
@@ -114,7 +158,7 @@ def validate_ui_pipeline() -> ValidationResult:
         _check_duplicate(template_id, seen_templates, "template", errors)
         template_path = _required_string(template_entry, "path", f"template {template_id}", errors)
         template = read_json(resolve_resource_path(template_path), errors)
-        _validate_template(template_id, template, slot_ids, errors)
+        _validate_template(template_id, template, slot_ids, component_ids, errors)
 
     return ValidationResult(tuple(errors), tuple(warnings))
 
@@ -129,6 +173,21 @@ def load_templates(errors: list[str] | None = None) -> list[dict[str, Any]]:
 
 def load_asset_slots(errors: list[str] | None = None) -> list[dict[str, Any]]:
     return _load_index_array(ASSET_SLOTS_PATH, "slots", errors)
+
+
+def load_components(errors: list[str] | None = None) -> list[dict[str, Any]]:
+    return _load_index_array(COMPONENT_CATALOG_PATH, "components", errors)
+
+
+def style_entry_by_id(style_id: str) -> dict[str, Any]:
+    styles = {style["id"]: style for style in load_styles()}
+    if style_id not in styles:
+        raise SystemExit(f"Unknown style: {style_id}")
+    return styles[style_id]
+
+
+def style_by_id(style_id: str) -> dict[str, Any]:
+    return read_json(resolve_resource_path(style_entry_by_id(style_id)["style_path"]))
 
 
 def build_prompt_pack(style: dict[str, Any], asset_slots: Iterable[dict[str, Any]]) -> dict[str, Any]:
@@ -153,8 +212,139 @@ def build_prompt_pack(style: dict[str, Any], asset_slots: Iterable[dict[str, Any
         "style_id": style.get("id", ""),
         "style_label": style.get("label", ""),
         "reference_mode": style.get("reference_mode", "text_style"),
+        "reference_image": style.get("reference_image", ""),
         "output_contract": output_contract,
+        "mode": "legacy_slots",
         "prompts": prompts,
+    }
+
+
+def build_kit_prompt_pack(style: dict[str, Any], components: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    output_contract = style.get("output_contract", {})
+    naming = output_contract.get("naming", "{style_id}_{slot_id}.png")
+    style_bible = load_style_bible(style)
+    prompts: list[dict[str, Any]] = []
+    for component in components:
+        component_id = str(component.get("id", ""))
+        kind = str(component.get("kind", "panel"))
+        for state in component.get("states", ["normal"]):
+            asset_id = f"{component_id}_{state}"
+            component_rule = style_bible.get("component_rules", {}).get(kind, "")
+            state_prompt = state_prompt_fragment(str(state))
+            prompts.append(
+                {
+                    "slot_id": asset_id,
+                    "asset_id": asset_id,
+                    "component_id": component_id,
+                    "state": state,
+                    "kind": kind,
+                    "label": f"{component.get('label', component_id)} / {state}",
+                    "prompt": ", ".join(
+                        part
+                        for part in [
+                            style.get("style_prompt", ""),
+                            component_rule,
+                            component.get("prompt", ""),
+                            state_prompt,
+                            "transparent background, one isolated reusable UI component, generous padding",
+                        ]
+                        if part
+                    ),
+                    "negative_prompt": ", ".join(
+                        part
+                        for part in [
+                            style.get("negative_prompt", ""),
+                            "complete screen mockup, multiple UI elements, baked labels, tiny fake letters",
+                        ]
+                        if part
+                    ),
+                    "output_name": naming.replace("{style_id}", str(style.get("id", ""))).replace(
+                        "{slot_id}", asset_id
+                    ),
+                    "nine_patch": component.get("nine_patch", [0, 0, 0, 0]),
+                }
+            )
+    return {
+        "schema_version": 1,
+        "style_id": style.get("id", ""),
+        "style_label": style.get("label", ""),
+        "reference_mode": style.get("reference_mode", "text_style"),
+        "reference_image": style.get("reference_image", ""),
+        "output_contract": output_contract,
+        "style_bible": style_bible,
+        "mode": "ui_kit",
+        "prompts": prompts,
+    }
+
+
+def state_prompt_fragment(state: str) -> str:
+    fragments = {
+        "normal": "normal default state",
+        "hover": "hover state, slightly brighter highlight, same silhouette as normal",
+        "pressed": "pressed state, slightly darker inset feel, same silhouette as normal",
+        "disabled": "disabled state, muted low contrast, same silhouette as normal",
+        "active": "active selected tab state, clear emphasis",
+        "inactive": "inactive tab state, subdued but readable",
+        "selected": "selected icon frame state, visible highlight",
+        "featured": "featured portrait frame state, premium accent",
+        "frame": "bar frame only with readable empty track",
+        "fill": "bar fill strip only, horizontally tileable",
+    }
+    return fragments.get(state, f"{state} state")
+
+
+def load_style_bible(style: dict[str, Any]) -> dict[str, Any]:
+    style_path = resolve_resource_path(f"res://ui_pipeline/styles/{style.get('id', '')}/style_bible.json")
+    if style_path.exists():
+        return read_json(style_path)
+    return {
+        "schema_version": 1,
+        "style_id": style.get("id", ""),
+        "palette": [],
+        "motifs": [],
+        "materials": [],
+        "layout_language": [],
+        "component_rules": {},
+        "avoid": [],
+    }
+
+
+def compile_skin(
+    style: dict[str, Any],
+    skin: dict[str, Any],
+    components: Iterable[dict[str, Any]],
+) -> dict[str, Any]:
+    component_catalog = {component["id"]: component for component in components}
+    skin_components = skin.get("components", {})
+    compiled_components: dict[str, Any] = {}
+
+    for component_id, component in component_catalog.items():
+        source_component = skin_components.get(component_id, {})
+        states: dict[str, Any] = {}
+        for state in component.get("states", ["normal"]):
+            state_data = source_component.get("states", {}).get(state, {})
+            if not state_data and state != "normal":
+                state_data = source_component.get("states", {}).get("normal", {})
+            if not state_data:
+                slot_fallback = skin.get("slots", {}).get(component_id, {})
+                state_data = {"image": slot_fallback.get("image", ""), "tint": slot_fallback.get("color", "")}
+            states[state] = {
+                "image": state_data.get("image", ""),
+                "tint": state_data.get("tint", ""),
+            }
+        compiled_components[component_id] = {
+            "kind": component.get("kind", "panel"),
+            "nine_patch": source_component.get("nine_patch", component.get("nine_patch", [0, 0, 0, 0])),
+            "states": states,
+        }
+
+    return {
+        "schema_version": 1,
+        "style_id": style.get("id", ""),
+        "label": skin.get("label", style.get("label", "")),
+        "font_color": skin.get("font_color", "#FFFFFF"),
+        "muted_color": skin.get("muted_color", "#AAAAAA"),
+        "components": compiled_components,
     }
 
 
@@ -163,6 +353,7 @@ def render_prompt_pack_markdown(prompt_pack: dict[str, Any]) -> str:
         f"# {prompt_pack['style_label']} Prompt Pack",
         "",
         f"Style ID: `{prompt_pack['style_id']}`",
+        f"Mode: `{prompt_pack.get('mode', 'legacy_slots')}`",
         "",
     ]
     for prompt in prompt_pack["prompts"]:
@@ -208,12 +399,18 @@ def _validate_style(style_id: str, style: dict[str, Any], errors: list[str]) -> 
     output_contract = style.get("output_contract")
     if not isinstance(output_contract, dict):
         errors.append(f"Style {style_id} missing output_contract object.")
+    style_bible_path = resolve_resource_path(f"res://ui_pipeline/styles/{style_id}/style_bible.json")
+    if style_bible_path.exists():
+        style_bible = read_json(style_bible_path, errors)
+        if style_bible.get("style_id") != style_id:
+            errors.append(f"Style bible id mismatch: style {style_id}, bible {style_bible.get('style_id')}")
 
 
 def _validate_skin(
     style_id: str,
     skin: dict[str, Any],
     slot_ids: set[Any],
+    component_ids: set[Any],
     errors: list[str],
     warnings: list[str],
 ) -> None:
@@ -231,11 +428,34 @@ def _validate_skin(
         if isinstance(image_path, str) and image_path and not resolve_resource_path(image_path).exists():
             errors.append(f"Skin {style_id} image does not exist: {image_path}")
 
+    components = skin.get("components", {})
+    if components and not isinstance(components, dict):
+        errors.append(f"Skin {style_id} field 'components' must be an object.")
+        return
+    for component_id, component_skin in components.items():
+        if component_id not in component_ids:
+            warnings.append(f"Skin {style_id} references unknown component: {component_id}")
+        if not isinstance(component_skin, dict):
+            errors.append(f"Skin {style_id} component {component_id} must be an object.")
+            continue
+        states = component_skin.get("states", {})
+        if not isinstance(states, dict):
+            errors.append(f"Skin {style_id} component {component_id} states must be an object.")
+            continue
+        for state, state_data in states.items():
+            if not isinstance(state_data, dict):
+                errors.append(f"Skin {style_id} component {component_id}.{state} must be an object.")
+                continue
+            image_path = state_data.get("image")
+            if isinstance(image_path, str) and image_path and not resolve_resource_path(image_path).exists():
+                errors.append(f"Skin {style_id} component image does not exist: {image_path}")
+
 
 def _validate_template(
     template_id: str,
     template: dict[str, Any],
     slot_ids: set[Any],
+    component_ids: set[Any],
     errors: list[str],
 ) -> None:
     if not template:
@@ -252,11 +472,27 @@ def _validate_template(
             continue
         node_id = node.get("id", "<missing>")
         slot_id = node.get("slot")
+        component_id = node.get("component")
         if slot_id not in slot_ids:
             errors.append(f"Template {template_id} node {node_id} references unknown slot: {slot_id}")
+        if component_id is not None and component_id not in component_ids:
+            errors.append(f"Template {template_id} node {node_id} references unknown component: {component_id}")
         rect = node.get("rect")
         if not isinstance(rect, list) or len(rect) != 4:
             errors.append(f"Template {template_id} node {node_id} rect must have four values.")
+
+
+def _validate_components(components: list[dict[str, Any]], errors: list[str]) -> None:
+    seen: set[str] = set()
+    for component in components:
+        component_id = _required_string(component, "id", "component", errors)
+        _check_duplicate(component_id, seen, "component", errors)
+        states = component.get("states", [])
+        if not isinstance(states, list) or not states:
+            errors.append(f"Component {component_id} must declare at least one state.")
+        nine_patch = component.get("nine_patch", [])
+        if not isinstance(nine_patch, list) or len(nine_patch) != 4:
+            errors.append(f"Component {component_id} nine_patch must have four values.")
 
 
 def _required_string(

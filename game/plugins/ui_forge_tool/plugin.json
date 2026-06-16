@@ -16,20 +16,20 @@
   "hooks": {},
   "tool_entry": {
     "title": "UI Forge",
-    "summary": "Generate AI prompt packs, drag UI templates, apply slot skins, and save custom UI layouts.",
+    "summary": "Generate component UI kit prompt packs, drag UI templates, apply skins, and save custom UI layouts.",
     "scene_path": "res://scenes/demos/ui_forge_demo.tscn",
     "order": 400,
     "loop": [
       "Choose a style",
       "Choose or drag a template",
-      "Generate or apply UI art",
+      "Generate or apply component UI art",
       "Save the customized template"
     ],
     "systems": [
       "AI provider config",
-      "Prompt packs",
+      "UI kit prompt packs",
       "Template JSON",
-      "Slot-based skins"
+      "Component/state skins"
     ],
     "release_checks": [
       "UI Forge plugin loads",
@@ -40,6 +40,7 @@
   "config": {
     "style_index": "res://ui_pipeline/styles/index.json",
     "template_index": "res://ui_pipeline/templates/index.json",
-    "asset_slots": "res://ui_pipeline/asset_slots.json"
+    "asset_slots": "res://ui_pipeline/asset_slots.json",
+    "component_catalog": "res://ui_pipeline/component_catalog.json"
   }
 }

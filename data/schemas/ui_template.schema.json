@@ -49,6 +49,9 @@
           "slot": {
             "type": "string"
           },
+          "component": {
+            "type": "string"
+          },
           "rect": {
             "type": "array",
             "prefixItems": [

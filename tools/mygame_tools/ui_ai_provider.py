@@ -18,7 +18,9 @@ try:
         ASSET_SLOTS_PATH,
         GAME_ROOT,
         REPO_ROOT,
+        build_kit_prompt_pack,
         build_prompt_pack,
+        load_components,
         load_styles,
         read_json,
         resolve_resource_path,
@@ -28,7 +30,9 @@ except ModuleNotFoundError:
         ASSET_SLOTS_PATH,
         GAME_ROOT,
         REPO_ROOT,
+        build_kit_prompt_pack,
         build_prompt_pack,
+        load_components,
         load_styles,
         read_json,
         resolve_resource_path,
@@ -83,7 +87,12 @@ def main(argv: list[str] | None = None) -> int:
 
 def _add_generate_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--style", default="neon_arcade")
-    parser.add_argument("--slot", action="append", default=[], help="Generate only this slot id. Repeatable.")
+    parser.add_argument(
+        "--slot",
+        action="append",
+        default=[],
+        help="Generate only this component id, component.state id, or asset id. Repeatable.",
+    )
     parser.add_argument("--output-root", default=str(GAME_ROOT / "ui_pipeline" / "generated"))
     parser.add_argument("--model", default=None)
     parser.add_argument("--size", default=None)
@@ -91,6 +100,7 @@ def _add_generate_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--output-format", default=None)
     parser.add_argument("--background", default=None)
     parser.add_argument("--reference-image", default=None, help="Reference image path. Defaults to style.reference_image when present.")
+    parser.add_argument("--legacy-slots", action="store_true", help="Generate the old slot prompt pack instead of the component UI kit.")
 
 
 def cmd_check(_args: argparse.Namespace, provider: ProviderConfig) -> int:
@@ -107,7 +117,7 @@ def cmd_check(_args: argparse.Namespace, provider: ProviderConfig) -> int:
 
 
 def cmd_dry_run(args: argparse.Namespace, provider: ProviderConfig) -> int:
-    prompt_pack = prompt_pack_for_style(args.style)
+    prompt_pack = prompt_pack_for_style(args.style, args.legacy_slots)
     prompts = select_prompts(prompt_pack, args.slot)
     print(f"Provider: {provider.label}")
     print(f"Model: {resolve_model(provider, args.model)}")
@@ -115,7 +125,9 @@ def cmd_dry_run(args: argparse.Namespace, provider: ProviderConfig) -> int:
     for prompt in prompts:
         request = build_openai_image_request(provider, args, prompt)
         print("")
-        print(f"Slot: {prompt['slot_id']}")
+        print(f"Asset: {prompt.get('asset_id', prompt['slot_id'])}")
+        if prompt.get("component_id"):
+            print(f"Component: {prompt['component_id']}.{prompt.get('state', 'normal')}")
         print(json.dumps({k: v for k, v in request.items() if k != "prompt"}, indent=2))
         reference_image = resolve_reference_image(args, prompt_pack)
         if reference_image:
@@ -130,23 +142,32 @@ def cmd_generate(args: argparse.Namespace, provider: ProviderConfig) -> int:
         print(f"ERROR: {provider.api_key_env} is not set. Copy .env.example to .env and fill it in.", file=sys.stderr)
         return 1
 
-    prompt_pack = prompt_pack_for_style(args.style)
+    prompt_pack = prompt_pack_for_style(args.style, args.legacy_slots)
     prompts = select_prompts(prompt_pack, args.slot)
     output_dir = Path(args.output_root) / args.style / "ai"
     output_dir.mkdir(parents=True, exist_ok=True)
     reference_image = resolve_reference_image(args, prompt_pack)
 
-    generated: dict[str, str] = {}
+    generated: list[dict[str, str]] = []
     for prompt in prompts:
         request_payload = build_openai_image_request(provider, args, prompt)
-        print(f"Generating {prompt['slot_id']}...")
+        asset_id = str(prompt.get("asset_id", prompt["slot_id"]))
+        print(f"Generating {asset_id}...")
         if reference_image is not None:
             image_bytes = call_openai_image_edit(provider, api_key, request_payload, reference_image)
         else:
             image_bytes = call_openai_images(provider, api_key, request_payload)
         output_path = output_dir / prompt["output_name"]
         output_path.write_bytes(image_bytes)
-        generated[prompt["slot_id"]] = resource_path(output_path)
+        generated.append(
+            {
+                "asset_id": asset_id,
+                "slot_id": str(prompt["slot_id"]),
+                "component_id": str(prompt.get("component_id", "")),
+                "state": str(prompt.get("state", "")),
+                "image": resource_path(output_path),
+            }
+        )
         print(f"Wrote {relative(output_path)}")
 
     manifest_path = output_dir / "generation_manifest.json"
@@ -157,7 +178,8 @@ def cmd_generate(args: argparse.Namespace, provider: ProviderConfig) -> int:
                 "provider": provider.id,
                 "model": resolve_model(provider, args.model),
                 "style_id": args.style,
-                "generated": generated,
+                "generated": {entry["asset_id"]: entry["image"] for entry in generated},
+                "assets": generated,
             },
             indent=2,
         ),
@@ -205,13 +227,16 @@ def load_provider_config(path: Path) -> ProviderConfig:
     )
 
 
-def prompt_pack_for_style(style_id: str) -> dict[str, Any]:
+def prompt_pack_for_style(style_id: str, legacy_slots: bool = False) -> dict[str, Any]:
     styles = {style["id"]: style for style in load_styles()}
     if style_id not in styles:
         raise SystemExit(f"Unknown style: {style_id}")
     style = read_json(resolve_resource_path(styles[style_id]["style_path"]))
-    asset_slots = read_json(ASSET_SLOTS_PATH)["slots"]
-    prompt_pack = build_prompt_pack(style, asset_slots)
+    if legacy_slots:
+        asset_slots = read_json(ASSET_SLOTS_PATH)["slots"]
+        prompt_pack = build_prompt_pack(style, asset_slots)
+    else:
+        prompt_pack = build_kit_prompt_pack(style, load_components())
     if "reference_image" in style:
         prompt_pack["reference_image"] = style["reference_image"]
     return prompt_pack
@@ -233,11 +258,35 @@ def select_prompts(prompt_pack: dict[str, Any], requested_slots: Iterable[str]) 
     if not requested:
         return prompts
 
-    selected = [prompt for prompt in prompts if prompt["slot_id"] in requested]
-    missing = requested - {prompt["slot_id"] for prompt in selected}
+    selected: list[dict[str, Any]] = []
+    matched: set[str] = set()
+    for prompt in prompts:
+        for requested_id in requested:
+            if prompt_matches(prompt, requested_id):
+                selected.append(prompt)
+                matched.add(requested_id)
+                break
+    missing = requested - matched
     if missing:
-        raise SystemExit(f"Unknown slot id: {', '.join(sorted(missing))}")
+        raise SystemExit(f"Unknown slot or component id: {', '.join(sorted(missing))}")
     return selected
+
+
+def prompt_matches(prompt: dict[str, Any], requested_id: str) -> bool:
+    asset_ids = {
+        str(prompt.get("slot_id", "")),
+        str(prompt.get("asset_id", "")),
+    }
+    if requested_id in asset_ids:
+        return True
+
+    component_id = str(prompt.get("component_id", ""))
+    state = str(prompt.get("state", ""))
+    if component_id and requested_id == component_id:
+        return True
+    if component_id and state and requested_id in {f"{component_id}.{state}", f"{component_id}:{state}"}:
+        return True
+    return False
 
 
 def build_openai_image_request(
@@ -376,12 +425,33 @@ def mime_type_for_path(path: Path) -> str:
     return "image/png"
 
 
-def update_skin(style_id: str, generated: dict[str, str]) -> None:
+def update_skin(style_id: str, generated: Iterable[dict[str, str]] | dict[str, str]) -> None:
     styles = {style["id"]: style for style in load_styles()}
     skin_path = resolve_resource_path(styles[style_id]["skin_path"])
     skin = read_json(skin_path)
     slots = skin.setdefault("slots", {})
-    for slot_id, image_path in generated.items():
+    components = skin.setdefault("components", {})
+
+    if isinstance(generated, dict):
+        generated_entries = [
+            {"asset_id": slot_id, "slot_id": slot_id, "component_id": "", "state": "", "image": image_path}
+            for slot_id, image_path in generated.items()
+        ]
+    else:
+        generated_entries = list(generated)
+
+    for entry in generated_entries:
+        component_id = entry.get("component_id", "")
+        state = entry.get("state", "")
+        image_path = entry["image"]
+        if component_id and state:
+            component = components.setdefault(component_id, {})
+            states = component.setdefault("states", {})
+            state_skin = states.setdefault(state, {})
+            state_skin["image"] = image_path
+            continue
+
+        slot_id = entry.get("slot_id") or entry.get("asset_id", "")
         slot = slots.setdefault(slot_id, {})
         slot["image"] = image_path
     skin_path.write_text(json.dumps(skin, indent=2, ensure_ascii=False), encoding="utf-8")

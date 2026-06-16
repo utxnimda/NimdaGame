@@ -11,10 +11,11 @@ const COLOR_ACCENT: Color = Color(0.86, 0.70, 0.28)
 var _styles: Array = []
 var _templates: Array = []
 var _asset_slots: Array = []
+var _components: Array = []
 var _style_option: OptionButton
 var _template_option: OptionButton
 var _status_label: Label
-var _slot_list: ItemList
+var _component_list: ItemList
 var _canvas
 var _current_style: Dictionary = {}
 var _current_skin: Dictionary = {}
@@ -25,6 +26,7 @@ func _ready() -> void:
 	_styles = Store.load_styles()
 	_templates = Store.load_templates()
 	_asset_slots = Store.load_asset_slots()
+	_components = Store.load_components()
 	_build_ui()
 	_load_current_selection()
 
@@ -110,15 +112,15 @@ func _build_ui() -> void:
 	save_button.pressed.connect(_save_custom_template)
 	left.add_child(save_button)
 
-	var slot_title := Label.new()
-	slot_title.text = "Asset Slots"
-	slot_title.add_theme_font_size_override("font_size", 16)
-	slot_title.add_theme_color_override("font_color", COLOR_TEXT)
-	left.add_child(slot_title)
+	var component_title := Label.new()
+	component_title.text = "UI Kit Components"
+	component_title.add_theme_font_size_override("font_size", 16)
+	component_title.add_theme_color_override("font_color", COLOR_TEXT)
+	left.add_child(component_title)
 
-	_slot_list = ItemList.new()
-	_slot_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	left.add_child(_slot_list)
+	_component_list = ItemList.new()
+	_component_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	left.add_child(_component_list)
 
 	_canvas = Canvas.new()
 	_canvas.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -156,17 +158,31 @@ func _load_current_selection() -> void:
 	_current_template = Store.load_template(_templates[template_index])
 	_canvas.set_template(_current_template)
 	_canvas.set_skin(_current_skin)
-	_refresh_slot_list()
+	_refresh_component_list()
 	_set_status("Loaded %s with %s." % [_current_template.get("label", ""), _current_skin.get("label", "")])
 
 
-func _refresh_slot_list() -> void:
-	_slot_list.clear()
+func _refresh_component_list() -> void:
+	_component_list.clear()
+	var skin_components: Dictionary = _current_skin.get("components", {})
 	var skin_slots: Dictionary = _current_skin.get("slots", {})
-	for slot in _asset_slots:
-		var slot_id: String = String(slot.get("id", ""))
-		var has_image: bool = String(skin_slots.get(slot_id, {}).get("image", "")) != ""
-		_slot_list.add_item("%s  %s" % [slot.get("label", slot_id), "img" if has_image else "color"])
+	if _components.is_empty():
+		for slot in _asset_slots:
+			var slot_id: String = String(slot.get("id", ""))
+			var has_image: bool = String(skin_slots.get(slot_id, {}).get("image", "")) != ""
+			_component_list.add_item("%s  %s" % [slot.get("label", slot_id), "img" if has_image else "color"])
+		return
+
+	for component in _components:
+		var component_id: String = String(component.get("id", ""))
+		var states: Array = component.get("states", ["normal"])
+		var skin_states: Dictionary = skin_components.get(component_id, {}).get("states", {})
+		var ready_count: int = 0
+		for state in states:
+			if String(skin_states.get(String(state), {}).get("image", "")).is_empty():
+				continue
+			ready_count += 1
+		_component_list.add_item("%s  %s/%s" % [component.get("label", component_id), ready_count, states.size()])
 
 
 func _on_selection_changed(_index: int) -> void:
@@ -175,6 +191,8 @@ func _on_selection_changed(_index: int) -> void:
 
 func _save_prompt_pack() -> void:
 	var prompt_pack: Dictionary = Store.build_prompt_pack(_current_style, _asset_slots)
+	if not _components.is_empty():
+		prompt_pack = Store.build_ui_kit_prompt_pack(_current_style, _components)
 	var style_id: String = String(_current_style.get("id", "style"))
 	var path: String = "user://ui_pipeline/%s_prompt_pack.json" % style_id
 	var error: Error = Store.save_user_json(path, prompt_pack)
