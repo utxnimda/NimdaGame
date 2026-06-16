@@ -4,6 +4,7 @@
   "label": "OpenAI Images",
   "provider": "openai",
   "endpoint": "https://api.openai.com/v1/images/generations",
+  "edit_endpoint": "https://api.openai.com/v1/images/edits",
   "api_key_env": "OPENAI_API_KEY",
   "model_env": "NIMDAGAME_OPENAI_IMAGE_MODEL",
   "default_model": "gpt-image-1",

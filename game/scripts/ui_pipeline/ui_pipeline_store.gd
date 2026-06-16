@@ -48,6 +48,7 @@ static func build_prompt_pack(style: Dictionary, asset_slots: Array) -> Dictiona
 		"style_id": style.get("id", ""),
 		"style_label": style.get("label", ""),
 		"reference_mode": style.get("reference_mode", "text_style"),
+		"reference_image": style.get("reference_image", ""),
 		"output_contract": style.get("output_contract", {}),
 		"prompts": prompts,
 	}

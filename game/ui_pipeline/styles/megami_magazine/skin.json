@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "id": "megami_magazine",
+  "label": "Megami Magazine Collage",
+  "font_color": "#191719",
+  "muted_color": "#675D65",
+  "slots": {
+    "panel_primary": {
+      "image": "res://ui_pipeline/generated/megami_magazine/panel_primary.svg",
+      "color": "#F3EEE5",
+      "border": "#0F5E9A"
+    },
+    "panel_secondary": {
+      "image": "res://ui_pipeline/generated/megami_magazine/panel_secondary.svg",
+      "color": "#FFF8EC",
+      "border": "#E34D8D"
+    },
+    "button_primary": {
+      "image": "res://ui_pipeline/generated/megami_magazine/button_primary.svg",
+      "color": "#E94D91",
+      "border": "#0F5E9A"
+    },
+    "status_bar": {
+      "image": "res://ui_pipeline/generated/megami_magazine/status_bar.svg",
+      "color": "#10A8D2",
+      "border": "#111111"
+    },
+    "icon_frame": {
+      "image": "res://ui_pipeline/generated/megami_magazine/icon_frame.svg",
+      "color": "#F9F4EA",
+      "border": "#111111"
+    }
+  }
+}

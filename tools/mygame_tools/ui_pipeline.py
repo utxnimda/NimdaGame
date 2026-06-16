@@ -201,6 +201,10 @@ def _validate_style(style_id: str, style: dict[str, Any], errors: list[str]) -> 
     if style.get("id") != style_id:
         errors.append(f"Style id mismatch: index {style_id}, file {style.get('id')}")
     _required_string(style, "style_prompt", f"style {style_id}", errors)
+    reference_image = style.get("reference_image", "")
+    if isinstance(reference_image, str) and reference_image:
+        if not resolve_resource_path(reference_image).exists():
+            errors.append(f"Style {style_id} reference image does not exist: {reference_image}")
     output_contract = style.get("output_contract")
     if not isinstance(output_contract, dict):
         errors.append(f"Style {style_id} missing output_contract object.")

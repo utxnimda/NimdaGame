@@ -45,6 +45,7 @@ class ProviderConfig:
     label: str
     provider: str
     endpoint: str
+    edit_endpoint: str
     api_key_env: str
     model_env: str
     default_model: str
@@ -89,6 +90,7 @@ def _add_generate_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--quality", default=None)
     parser.add_argument("--output-format", default=None)
     parser.add_argument("--background", default=None)
+    parser.add_argument("--reference-image", default=None, help="Reference image path. Defaults to style.reference_image when present.")
 
 
 def cmd_check(_args: argparse.Namespace, provider: ProviderConfig) -> int:
@@ -115,6 +117,9 @@ def cmd_dry_run(args: argparse.Namespace, provider: ProviderConfig) -> int:
         print("")
         print(f"Slot: {prompt['slot_id']}")
         print(json.dumps({k: v for k, v in request.items() if k != "prompt"}, indent=2))
+        reference_image = resolve_reference_image(args, prompt_pack)
+        if reference_image:
+            print(f"Reference image: {relative(reference_image)}")
         print(f"Prompt: {prompt['prompt']}")
     return 0
 
@@ -129,12 +134,16 @@ def cmd_generate(args: argparse.Namespace, provider: ProviderConfig) -> int:
     prompts = select_prompts(prompt_pack, args.slot)
     output_dir = Path(args.output_root) / args.style / "ai"
     output_dir.mkdir(parents=True, exist_ok=True)
+    reference_image = resolve_reference_image(args, prompt_pack)
 
     generated: dict[str, str] = {}
     for prompt in prompts:
         request_payload = build_openai_image_request(provider, args, prompt)
         print(f"Generating {prompt['slot_id']}...")
-        image_bytes = call_openai_images(provider, api_key, request_payload)
+        if reference_image is not None:
+            image_bytes = call_openai_image_edit(provider, api_key, request_payload, reference_image)
+        else:
+            image_bytes = call_openai_images(provider, api_key, request_payload)
         output_path = output_dir / prompt["output_name"]
         output_path.write_bytes(image_bytes)
         generated[prompt["slot_id"]] = resource_path(output_path)
@@ -171,7 +180,7 @@ def load_env_file(path: Path) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        key = key.strip()
+        key = key.strip().lstrip("\ufeff")
         value = value.strip().strip('"').strip("'")
         if key and key not in os.environ:
             os.environ[key] = value
@@ -184,6 +193,7 @@ def load_provider_config(path: Path) -> ProviderConfig:
         label=str(raw.get("label", "OpenAI Images")),
         provider=str(raw.get("provider", "openai")),
         endpoint=str(raw.get("endpoint", "https://api.openai.com/v1/images/generations")),
+        edit_endpoint=str(raw.get("edit_endpoint", "https://api.openai.com/v1/images/edits")),
         api_key_env=str(raw.get("api_key_env", "OPENAI_API_KEY")),
         model_env=str(raw.get("model_env", "NIMDAGAME_OPENAI_IMAGE_MODEL")),
         default_model=str(raw.get("default_model", "gpt-image-1")),
@@ -201,7 +211,20 @@ def prompt_pack_for_style(style_id: str) -> dict[str, Any]:
         raise SystemExit(f"Unknown style: {style_id}")
     style = read_json(resolve_resource_path(styles[style_id]["style_path"]))
     asset_slots = read_json(ASSET_SLOTS_PATH)["slots"]
-    return build_prompt_pack(style, asset_slots)
+    prompt_pack = build_prompt_pack(style, asset_slots)
+    if "reference_image" in style:
+        prompt_pack["reference_image"] = style["reference_image"]
+    return prompt_pack
+
+
+def resolve_reference_image(args: argparse.Namespace, prompt_pack: dict[str, Any]) -> Path | None:
+    image_path = args.reference_image or prompt_pack.get("reference_image", "")
+    if not image_path:
+        return None
+    resolved = resolve_resource_path(str(image_path))
+    if not resolved.exists():
+        raise SystemExit(f"Reference image does not exist: {image_path}")
+    return resolved
 
 
 def select_prompts(prompt_pack: dict[str, Any], requested_slots: Iterable[str]) -> list[dict[str, Any]]:
@@ -272,6 +295,85 @@ def call_openai_images(provider: ProviderConfig, api_key: str, payload: dict[str
     if not data or "b64_json" not in data[0]:
         raise SystemExit(f"OpenAI image response did not contain data[0].b64_json: {response_body}")
     return base64.b64decode(data[0]["b64_json"])
+
+
+def call_openai_image_edit(
+    provider: ProviderConfig,
+    api_key: str,
+    payload: dict[str, Any],
+    image_path: Path,
+) -> bytes:
+    fields = {key: str(value) for key, value in payload.items() if key != "n"}
+    fields["n"] = str(payload.get("n", 1))
+    body, content_type = build_multipart_body(
+        fields,
+        file_field="image",
+        file_path=image_path,
+        mime_type=mime_type_for_path(image_path),
+    )
+    request = urllib.request.Request(
+        provider.edit_endpoint,
+        data=body,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": content_type,
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=provider.timeout_seconds) as response:
+            response_body = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"OpenAI image edit request failed: HTTP {exc.code}\n{body}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"OpenAI image edit request failed: {exc}") from exc
+
+    parsed = json.loads(response_body)
+    data = parsed.get("data", [])
+    if not data or "b64_json" not in data[0]:
+        raise SystemExit(f"OpenAI image edit response did not contain data[0].b64_json: {response_body}")
+    return base64.b64decode(data[0]["b64_json"])
+
+
+def build_multipart_body(
+    fields: dict[str, str],
+    file_field: str,
+    file_path: Path,
+    mime_type: str,
+) -> tuple[bytes, str]:
+    boundary = "----NimdaGameBoundary7MA4YWxkTrZu0gW"
+    chunks: list[bytes] = []
+    for key, value in fields.items():
+        chunks.extend(
+            [
+                f"--{boundary}\r\n".encode("utf-8"),
+                f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode("utf-8"),
+                value.encode("utf-8"),
+                b"\r\n",
+            ]
+        )
+
+    chunks.extend(
+        [
+            f"--{boundary}\r\n".encode("utf-8"),
+            f'Content-Disposition: form-data; name="{file_field}"; filename="{file_path.name}"\r\n'.encode("utf-8"),
+            f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8"),
+            file_path.read_bytes(),
+            b"\r\n",
+            f"--{boundary}--\r\n".encode("utf-8"),
+        ]
+    )
+    return b"".join(chunks), f"multipart/form-data; boundary={boundary}"
+
+
+def mime_type_for_path(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix in {".jpg", ".jpeg"}:
+        return "image/jpeg"
+    if suffix == ".webp":
+        return "image/webp"
+    return "image/png"
 
 
 def update_skin(style_id: str, generated: dict[str, str]) -> None:

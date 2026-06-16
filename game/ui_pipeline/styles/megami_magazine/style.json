@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "megami_magazine",
+  "label": "Megami Magazine Collage",
+  "reference_mode": "image_reference",
+  "reference_image": "res://ui_pipeline/references/megami_magazine_reference.jpg",
+  "style_prompt": "anime magazine collage game UI assets inspired by the reference image, torn paper edges, sticker-like cutouts, glossy hot pink title accents, cyan blue brush streaks, black tape strips, halftone dots, scrapbook paper texture, energetic idol magazine cover composition, clean transparent-safe UI parts, no readable text baked into the asset",
+  "negative_prompt": "photorealistic UI, medieval fantasy frame, realistic metal, readable words, logos, watermark, full character illustration, face, body, cluttered center area, tiny text",
+  "output_contract": {
+    "format": "png",
+    "transparent_background": true,
+    "safe_border_px": 12,
+    "naming": "megami_{slot_id}.png"
+  }
+}

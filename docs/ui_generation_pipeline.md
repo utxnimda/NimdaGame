@@ -209,6 +209,29 @@ The demo supports:
 - custom template save
 - plugin-managed Demo Hub entry
 
+## Current Reference Style Pack
+
+The project includes a reference-image style pack:
+
+```text
+game/ui_pipeline/styles/megami_magazine/
+game/ui_pipeline/references/megami_magazine_reference.jpg
+game/ui_pipeline/templates/megami/
+```
+
+It contains:
+
+- `Megami Battle HUD`
+- `Megami Character Card`
+- `Megami Main Menu`
+
+Generate AI assets for this style after API billing is available:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py dry-run --style megami_magazine
+python tools/mygame_tools/ui_ai_provider.py generate --style megami_magazine --write-skin
+```
+
 ## Tooling
 
 ```powershell

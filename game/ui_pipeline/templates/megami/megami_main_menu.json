@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "id": "megami_main_menu",
+  "label": "Megami Main Menu",
+  "canvas_size": [960, 540],
+  "nodes": [
+    {
+      "id": "title_plate",
+      "type": "panel",
+      "slot": "panel_primary",
+      "rect": [72, 42, 588, 118],
+      "text": "Megami RPG"
+    },
+    {
+      "id": "feature_card",
+      "type": "icon",
+      "slot": "icon_frame",
+      "rect": [666, 44, 198, 250],
+      "text": "Feature"
+    },
+    {
+      "id": "menu_panel",
+      "type": "panel",
+      "slot": "panel_secondary",
+      "rect": [86, 208, 388, 258],
+      "text": "Menu"
+    },
+    {
+      "id": "start_button",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [132, 260, 292, 48],
+      "text": "Start"
+    },
+    {
+      "id": "party_button",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [132, 326, 292, 48],
+      "text": "Party"
+    },
+    {
+      "id": "gallery_button",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [132, 392, 292, 48],
+      "text": "Gallery"
+    },
+    {
+      "id": "news_panel",
+      "type": "panel",
+      "slot": "panel_secondary",
+      "rect": [520, 332, 344, 134],
+      "text": "Cover Feature"
+    }
+  ]
+}

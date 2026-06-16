@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "id": "megami_character_card",
+  "label": "Megami Character Card",
+  "canvas_size": [960, 540],
+  "nodes": [
+    {
+      "id": "card_base",
+      "type": "panel",
+      "slot": "panel_primary",
+      "rect": [166, 34, 628, 460],
+      "text": "Character Feature"
+    },
+    {
+      "id": "portrait_main",
+      "type": "icon",
+      "slot": "icon_frame",
+      "rect": [212, 82, 212, 270],
+      "text": "Portrait"
+    },
+    {
+      "id": "name_plate",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [458, 86, 274, 58],
+      "text": "Hero Name"
+    },
+    {
+      "id": "bio_panel",
+      "type": "panel",
+      "slot": "panel_secondary",
+      "rect": [456, 164, 276, 130],
+      "text": "Profile"
+    },
+    {
+      "id": "bond_bar",
+      "type": "bar",
+      "slot": "status_bar",
+      "rect": [456, 322, 276, 28],
+      "text": "Bond"
+    },
+    {
+      "id": "skill_a",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [216, 386, 160, 44],
+      "text": "Skill A"
+    },
+    {
+      "id": "skill_b",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [400, 386, 160, 44],
+      "text": "Skill B"
+    },
+    {
+      "id": "skill_c",
+      "type": "button",
+      "slot": "button_primary",
+      "rect": [584, 386, 160, 44],
+      "text": "Skill C"
+    }
+  ]
+}

@@ -12,6 +12,12 @@
       "label": "Ink Fantasy",
       "style_path": "res://ui_pipeline/styles/ink_fantasy/style.json",
       "skin_path": "res://ui_pipeline/styles/ink_fantasy/skin.json"
+    },
+    {
+      "id": "megami_magazine",
+      "label": "Megami Magazine Collage",
+      "style_path": "res://ui_pipeline/styles/megami_magazine/style.json",
+      "skin_path": "res://ui_pipeline/styles/megami_magazine/skin.json"
     }
   ]
 }
