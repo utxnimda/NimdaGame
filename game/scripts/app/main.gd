@@ -3,7 +3,7 @@ extends Control
 const DemoBoard = preload("res://scripts/demos/demo_board.gd")
 const DemoCatalog = preload("res://scripts/demos/demo_catalog.gd")
 
-var _catalog: Array = DemoCatalog.get_categories()
+var _catalog: Array = []
 var _selected_index := 0
 var _buttons: Array[Button] = []
 var _title_label: Label
@@ -16,6 +16,8 @@ var _board: Control
 
 func _ready() -> void:
 	print("NimdaGame Godot layer started.")
+	_catalog = DemoCatalog.get_categories()
+	_catalog.append_array(PluginRegistry.get_tool_entries())
 	_build_ui()
 	_select_demo(0)
 

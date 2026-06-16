@@ -10,6 +10,7 @@ const IMPLEMENTATION_EXTERNAL_SCRIPT := "external_script"
 var _plugins_by_id: Dictionary = {}
 var _hook_entries: Dictionary = {}
 var _load_errors: Array[String] = []
+var _tool_entries: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -19,6 +20,7 @@ func _ready() -> void:
 func reload_plugins(path: String = ENABLED_PLUGINS_PATH) -> void:
 	_plugins_by_id.clear()
 	_hook_entries.clear()
+	_tool_entries.clear()
 	_load_errors.clear()
 
 	var enabled_config: Dictionary = _read_json_dictionary(path)
@@ -105,6 +107,7 @@ func _load_manifest(manifest_path: String) -> void:
 		"instance": instance,
 	}
 	_register_hooks(plugin_id, manifest, instance)
+	_register_tool_entry(plugin_id, manifest)
 
 
 func _create_plugin_instance(plugin_id: String, implementation: Dictionary) -> Object:
@@ -164,6 +167,36 @@ func _register_hooks(plugin_id: String, manifest: Dictionary, plugin: Object) ->
 			"plugin": plugin,
 		})
 		_hook_entries[hook_id] = entries
+
+
+func get_tool_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = _tool_entries.duplicate(true)
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("order", 1000)) < int(b.get("order", 1000))
+	)
+	return entries
+
+
+func _register_tool_entry(plugin_id: String, manifest: Dictionary) -> void:
+	var tool_entry: Dictionary = manifest.get("tool_entry", {})
+	if tool_entry.is_empty():
+		return
+
+	var scene_path := String(tool_entry.get("scene_path", ""))
+	if scene_path.is_empty():
+		_load_errors.append("Plugin %s tool_entry missing scene_path." % plugin_id)
+		return
+
+	_tool_entries.append({
+		"id": "plugin_%s" % plugin_id,
+		"title": tool_entry.get("title", manifest.get("name", plugin_id)),
+		"summary": tool_entry.get("summary", manifest.get("description", "")),
+		"scene_path": scene_path,
+		"loop": tool_entry.get("loop", []),
+		"systems": tool_entry.get("systems", []),
+		"release_checks": tool_entry.get("release_checks", []),
+		"order": int(tool_entry.get("order", 1000)),
+	})
 
 
 func _read_json_dictionary(path: String) -> Dictionary:

@@ -176,6 +176,30 @@ It demonstrates a GDScript rules plugin:
 - Adds bonus damage to Mage `Fireball`.
 - Writes plugin messages into the battle log.
 
+## Plugin Tool Entries
+
+Plugins can expose a Demo Hub entry with `tool_entry`:
+
+```json
+{
+  "tool_entry": {
+    "title": "UI Forge",
+    "summary": "Generate AI prompt packs and apply UI skins.",
+    "scene_path": "res://scenes/demos/ui_forge_demo.tscn",
+    "order": 400,
+    "loop": ["Choose a style", "Apply generated UI art"],
+    "systems": ["AI provider config", "Template JSON"],
+    "release_checks": ["UI Forge plugin loads"]
+  }
+}
+```
+
+The current UI pipeline is managed by:
+
+```text
+game/plugins/ui_forge_tool/plugin.json
+```
+
 ## Validation
 
 Run:

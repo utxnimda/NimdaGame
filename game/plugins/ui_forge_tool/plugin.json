@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "id": "ui_forge_tool",
+  "name": "UI Forge Tool",
+  "version": "0.1.0",
+  "description": "UI generation and template tool managed as a runtime plugin.",
+  "implementation": {
+    "type": "gdscript",
+    "entry": "res://plugins/ui_forge_tool/plugin.gd"
+  },
+  "capabilities": [
+    "ui.pipeline",
+    "ui.template",
+    "ai.prompt_pack"
+  ],
+  "hooks": {},
+  "tool_entry": {
+    "title": "UI Forge",
+    "summary": "Generate AI prompt packs, drag UI templates, apply slot skins, and save custom UI layouts.",
+    "scene_path": "res://scenes/demos/ui_forge_demo.tscn",
+    "order": 400,
+    "loop": [
+      "Choose a style",
+      "Choose or drag a template",
+      "Generate or apply UI art",
+      "Save the customized template"
+    ],
+    "systems": [
+      "AI provider config",
+      "Prompt packs",
+      "Template JSON",
+      "Slot-based skins"
+    ],
+    "release_checks": [
+      "UI Forge plugin loads",
+      "Template save path is writable",
+      "Sample skin assets are bundled"
+    ]
+  },
+  "config": {
+    "style_index": "res://ui_pipeline/styles/index.json",
+    "template_index": "res://ui_pipeline/templates/index.json",
+    "asset_slots": "res://ui_pipeline/asset_slots.json"
+  }
+}

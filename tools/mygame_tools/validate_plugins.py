@@ -132,6 +132,17 @@ def _validate_manifest(
         if not isinstance(priority, int) or priority < 0:
             errors.append(f"Plugin {plugin_id} hook {hook_id} priority must be a non-negative integer.")
 
+    tool_entry = manifest.get("tool_entry")
+    if tool_entry is not None:
+        if not isinstance(tool_entry, dict):
+            errors.append(f"Plugin {plugin_id} tool_entry must be an object.")
+            return
+        scene_path = tool_entry.get("scene_path")
+        if not isinstance(scene_path, str) or not scene_path:
+            errors.append(f"Plugin {plugin_id} tool_entry missing scene_path.")
+        elif not resolve_resource_path(scene_path).exists():
+            errors.append(f"Plugin {plugin_id} tool_entry scene does not exist: {scene_path}")
+
 
 def _required_string(
     manifest: dict[str, Any],

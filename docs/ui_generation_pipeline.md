@@ -13,6 +13,18 @@ style or reference image
 
 The first implementation is a Godot runtime demo plus Python tooling. It is designed to work even before a specific AI image provider is chosen.
 
+UI Forge is managed as a runtime plugin:
+
+```text
+game/plugins/ui_forge_tool/plugin.json
+```
+
+Enable or disable it through:
+
+```text
+game/plugins/enabled_plugins.json
+```
+
 ## Data Layout
 
 ```text
@@ -43,6 +55,38 @@ Prompt packs from the Python tool are written to:
 ```text
 dist/ui_pipeline/<style_id>/
 ```
+
+## AI Provider Setup
+
+The default provider is OpenAI Images:
+
+```text
+tools/ai_providers/openai_images.json
+```
+
+Local token setup:
+
+```powershell
+copy .env.example .env
+```
+
+Then edit `.env`:
+
+```text
+OPENAI_API_KEY=your_api_key_here
+NIMDAGAME_AI_PROVIDER=openai_images
+NIMDAGAME_OPENAI_IMAGE_MODEL=gpt-image-1
+```
+
+`.env` is ignored by Git.
+
+Check provider readiness:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py check
+```
+
+The OpenAI Image API is used for single-prompt image generation. The provider config is model-driven so the default model can be changed without code edits.
 
 ## Step 1: Generate UI Art With AI
 
@@ -75,6 +119,28 @@ Then map those files in:
 
 ```text
 game/ui_pipeline/styles/<style_id>/skin.json
+```
+
+Generate with the OpenAI provider:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py dry-run --style neon_arcade
+python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --slot button_primary
+python tools/mygame_tools/ui_ai_provider.py generate --style neon_arcade --write-skin
+```
+
+PowerShell wrapper:
+
+```powershell
+scripts/ui_generate.ps1 -DryRun -Style neon_arcade
+scripts/ui_generate.ps1 -Style neon_arcade -Slot button_primary
+scripts/ui_generate.ps1 -Style neon_arcade -WriteSkin
+```
+
+Generated files are written to:
+
+```text
+game/ui_pipeline/generated/<style_id>/ai/
 ```
 
 ## Step 2: Build Or Save Layout Templates
@@ -141,6 +207,7 @@ The demo supports:
 - drag-to-reposition template nodes
 - one-click skin application
 - custom template save
+- plugin-managed Demo Hub entry
 
 ## Tooling
 
@@ -148,6 +215,8 @@ The demo supports:
 python tools/mygame_tools/ui_pipeline.py list
 python tools/mygame_tools/ui_pipeline.py validate
 python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade
+python tools/mygame_tools/ui_ai_provider.py check
+python tools/mygame_tools/ui_ai_provider.py dry-run --style neon_arcade
 ```
 
 The release pipeline also runs UI pipeline validation:
@@ -165,3 +234,5 @@ prompt_pack.json -> provider adapter -> generated UI images -> skin.json
 ```
 
 This keeps API keys, rate limits, and provider-specific retries out of the shipped game.
+
+The Godot UI Forge scene consumes generated assets through `skin.json`; it does not need to know which AI provider produced them.

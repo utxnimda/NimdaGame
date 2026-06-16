@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "id": "openai_images",
+  "label": "OpenAI Images",
+  "provider": "openai",
+  "endpoint": "https://api.openai.com/v1/images/generations",
+  "api_key_env": "OPENAI_API_KEY",
+  "model_env": "NIMDAGAME_OPENAI_IMAGE_MODEL",
+  "default_model": "gpt-image-1",
+  "default_size": "1024x1024",
+  "default_quality": "medium",
+  "default_output_format": "png",
+  "default_background": "transparent",
+  "timeout_seconds": 180
+}

@@ -16,6 +16,7 @@ dependencies = [
 nimdagame-release = "mygame_tools.release_pipeline:main"
 nimdagame-validate-plugins = "mygame_tools.validate_plugins:main"
 nimdagame-ui-pipeline = "mygame_tools.ui_pipeline:main"
+nimdagame-ui-ai = "mygame_tools.ui_ai_provider:main"
 
 [project.optional-dependencies]
 dev = [
