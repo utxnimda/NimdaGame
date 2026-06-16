@@ -1,0 +1,24 @@
+name: Release Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  release-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Print release plan
+        run: python tools/mygame_tools/release_pipeline.py plan
+
+      - name: Check release layout
+        run: python tools/mygame_tools/release_pipeline.py check

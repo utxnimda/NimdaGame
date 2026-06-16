@@ -1,0 +1,28 @@
+{
+  "project_name": "NimdaGame",
+  "godot_project_dir": "game",
+  "artifact_root": "dist",
+  "targets": [
+    {
+      "id": "windows",
+      "label": "Windows Desktop",
+      "preset": "Windows Desktop",
+      "export_path": "dist/exports/windows/NimdaGame.exe",
+      "package_path": "dist/packages/NimdaGame-{version}-windows.zip"
+    },
+    {
+      "id": "linux",
+      "label": "Linux",
+      "preset": "Linux/X11",
+      "export_path": "dist/exports/linux/NimdaGame.x86_64",
+      "package_path": "dist/packages/NimdaGame-{version}-linux.zip"
+    },
+    {
+      "id": "web",
+      "label": "Web",
+      "preset": "Web",
+      "export_path": "dist/exports/web/index.html",
+      "package_path": "dist/packages/NimdaGame-{version}-web.zip"
+    }
+  ]
+}

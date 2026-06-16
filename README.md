@@ -10,6 +10,17 @@ The project is organized around three layers:
 
 See [docs/architecture.md](docs/architecture.md) for the intended boundaries.
 
+## Demo Hub
+
+The Godot project currently starts at a small Demo Hub with four categories:
+
+1. Turn RPG
+2. ARPG / Survivor
+3. Tactics
+4. Systems Lab for tower defense, idle/incremental, cards, roguelite rewards, economy, and meta progression
+
+This hub is the first build smoke test. A release build should open the hub and allow every category to be selected.
+
 ## Repository Layout
 
 ```text
@@ -28,6 +39,16 @@ docs/       Architecture and design notes
 3. Load generated JSON from `game/data/generated/`.
 4. Call C++ gameplay simulation through `game/scripts/adapters/`.
 5. Present the result through Godot scenes and UI.
+
+## Release Pipeline
+
+```powershell
+python tools/mygame_tools/release_pipeline.py plan
+python tools/mygame_tools/release_pipeline.py check
+python tools/mygame_tools/release_pipeline.py notes --version 0.1.0
+```
+
+Real export requires local Godot export presets. See [docs/release_pipeline.md](docs/release_pipeline.md).
 
 ## Current Status
 
