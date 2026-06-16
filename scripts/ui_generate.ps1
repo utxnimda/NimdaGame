@@ -8,7 +8,10 @@ param(
     [string]$Quality = "",
     [string]$OutputFormat = "",
     [string]$Background = "",
-    [string]$Provider = ""
+    [string]$Provider = "",
+    [string]$AspectRatio = "",
+    [string]$ImageSize = "",
+    [string]$PersonGeneration = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -50,6 +53,18 @@ if ($OutputFormat -ne "") {
 
 if ($Background -ne "") {
     $ArgsList += @("--background", $Background)
+}
+
+if ($AspectRatio -ne "") {
+    $ArgsList += @("--aspect-ratio", $AspectRatio)
+}
+
+if ($ImageSize -ne "") {
+    $ArgsList += @("--image-size", $ImageSize)
+}
+
+if ($PersonGeneration -ne "") {
+    $ArgsList += @("--person-generation", $PersonGeneration)
 }
 
 Push-Location $RepoRoot

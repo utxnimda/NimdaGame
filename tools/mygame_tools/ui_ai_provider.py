@@ -103,6 +103,9 @@ def _add_generate_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--background", default=None)
     parser.add_argument("--reference-image", default=None, help="Reference image path. Defaults to style.reference_image when present.")
     parser.add_argument("--legacy-slots", action="store_true", help="Generate the old slot prompt pack instead of the component UI kit.")
+    parser.add_argument("--aspect-ratio", default=None, help="Provider-specific aspect ratio, for example 1:1, 4:3, 16:9.")
+    parser.add_argument("--image-size", default=None, help="Provider-specific image size, for example 1K or 2K for Imagen.")
+    parser.add_argument("--person-generation", default=None, help="Provider-specific person generation policy.")
 
 
 def cmd_check(_args: argparse.Namespace, provider: ProviderConfig) -> int:
@@ -132,8 +135,10 @@ def cmd_dry_run(args: argparse.Namespace, provider: ProviderConfig) -> int:
         if prompt.get("component_id"):
             print(f"Component: {prompt['component_id']}.{prompt.get('state', 'normal')}")
         print(json.dumps(printable_request(request), indent=2))
-        if reference_image:
+        if reference_image and provider_uses_reference_image(provider):
             print(f"Reference image: {relative(reference_image)}")
+        elif reference_image:
+            print(f"Reference image ignored by provider: {relative(reference_image)}")
         print(f"Prompt: {prompt['prompt']}")
     return 0
 
@@ -242,6 +247,10 @@ def load_provider_config(path: Path) -> ProviderConfig:
     )
 
 
+def provider_uses_reference_image(provider: ProviderConfig) -> bool:
+    return provider.provider in {"openai", "google_gemini"}
+
+
 def printable_request(payload: dict[str, Any]) -> dict[str, Any]:
     preview = {
         key: value
@@ -254,6 +263,8 @@ def printable_request(payload: dict[str, Any]) -> dict[str, Any]:
             "text prompt" if "text" in part else f"inline image ({part.get('inlineData', {}).get('mimeType', 'unknown')})"
             for part in parts
         ]
+    if "instances" in payload:
+        preview["instances"] = [{"prompt": "text prompt"} for _instance in payload.get("instances", [])]
     return preview
 
 
@@ -329,6 +340,8 @@ def build_provider_image_request(
         return build_openai_image_request(provider, args, prompt)
     if provider.provider == "google_gemini":
         return build_gemini_image_request(provider, args, prompt, reference_image)
+    if provider.provider == "google_imagen":
+        return build_imagen_image_request(provider, args, prompt)
     raise SystemExit(f"Unsupported AI image provider: {provider.provider}")
 
 
@@ -377,6 +390,42 @@ def build_gemini_image_request(
     }
 
 
+def build_imagen_image_request(
+    provider: ProviderConfig,
+    args: argparse.Namespace,
+    prompt: dict[str, Any],
+) -> dict[str, Any]:
+    parameters: dict[str, Any] = {
+        "sampleCount": 1,
+    }
+
+    aspect_ratio = args.aspect_ratio
+    if aspect_ratio is None and args.size in {"1:1", "3:4", "4:3", "9:16", "16:9"}:
+        aspect_ratio = args.size
+    if aspect_ratio:
+        parameters["aspectRatio"] = aspect_ratio
+
+    image_size = args.image_size
+    if image_size is None and args.size in {"1K", "2K"}:
+        image_size = args.size
+    if image_size:
+        parameters["imageSize"] = image_size
+
+    person_generation = args.person_generation
+    if person_generation:
+        parameters["personGeneration"] = person_generation
+
+    return {
+        "_model": resolve_model(provider, args.model),
+        "instances": [
+            {
+                "prompt": prompt["prompt"],
+            }
+        ],
+        "parameters": parameters,
+    }
+
+
 def resolve_model(provider: ProviderConfig, explicit_model: str | None) -> str:
     if explicit_model:
         return explicit_model
@@ -398,6 +447,8 @@ def call_provider_images(
         return call_openai_images(provider, api_key, payload)
     if provider.provider == "google_gemini":
         return call_gemini_images(provider, api_key, payload)
+    if provider.provider == "google_imagen":
+        return call_imagen_images(provider, api_key, payload)
     raise SystemExit(f"Unsupported AI image provider: {provider.provider}")
 
 
@@ -495,6 +546,64 @@ def call_gemini_images(provider: ProviderConfig, api_key: str, payload: dict[str
         message = f" Gemini text response: {text}" if text else ""
         raise SystemExit(f"Gemini image response did not contain inline image data.{message}")
     return image_bytes
+
+
+def call_imagen_images(provider: ProviderConfig, api_key: str, payload: dict[str, Any]) -> bytes:
+    model = str(payload.get("_model", provider.default_model))
+    request_payload = {key: value for key, value in payload.items() if not key.startswith("_")}
+    endpoint = provider.endpoint.replace("{model}", model)
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(request_payload).encode("utf-8"),
+        headers={
+            "x-goog-api-key": api_key,
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=provider.timeout_seconds) as response:
+            response_body = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise SystemExit(f"Imagen request failed: HTTP {exc.code}\n{body}") from exc
+    except urllib.error.URLError as exc:
+        raise SystemExit(f"Imagen request failed: {exc}") from exc
+
+    parsed = json.loads(response_body)
+    image_bytes = extract_imagen_image_bytes(parsed)
+    if image_bytes is None:
+        raise SystemExit(f"Imagen response did not contain image bytes: {response_body}")
+    return image_bytes
+
+
+def extract_imagen_image_bytes(parsed: dict[str, Any]) -> bytes | None:
+    for prediction in parsed.get("predictions", []):
+        image_data = first_base64_value(
+            prediction,
+            keys=("bytesBase64Encoded", "imageBytes", "b64Json", "data"),
+        )
+        if image_data:
+            return base64.b64decode(image_data)
+    return None
+
+
+def first_base64_value(payload: Any, keys: tuple[str, ...]) -> str:
+    if isinstance(payload, dict):
+        for key in keys:
+            value = payload.get(key)
+            if isinstance(value, str) and value:
+                return value
+        for value in payload.values():
+            nested = first_base64_value(value, keys)
+            if nested:
+                return nested
+    if isinstance(payload, list):
+        for value in payload:
+            nested = first_base64_value(value, keys)
+            if nested:
+                return nested
+    return ""
 
 
 def extract_gemini_image_bytes(parsed: dict[str, Any]) -> bytes | None:

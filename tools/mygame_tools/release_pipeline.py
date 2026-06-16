@@ -152,6 +152,7 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
     _require_file(REPO_ROOT / "release" / "release_targets.json", errors)
     _require_file(REPO_ROOT / "tools" / "ai_providers" / "openai_images.json", errors)
     _require_file(REPO_ROOT / "tools" / "ai_providers" / "gemini_images.json", errors)
+    _require_file(REPO_ROOT / "tools" / "ai_providers" / "google_imagen_fast.json", errors)
 
     plugin_result = validate_plugin_layout()
     errors.extend(plugin_result.errors)

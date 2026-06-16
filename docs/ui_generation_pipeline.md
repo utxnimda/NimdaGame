@@ -68,6 +68,7 @@ Provider configs live in:
 ```text
 tools/ai_providers/openai_images.json
 tools/ai_providers/gemini_images.json
+tools/ai_providers/google_imagen_fast.json
 ```
 
 Local token setup:
@@ -84,6 +85,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 NIMDAGAME_AI_PROVIDER=gemini_images
 NIMDAGAME_OPENAI_IMAGE_MODEL=gpt-image-1
 NIMDAGAME_GEMINI_IMAGE_MODEL=gemini-3.1-flash-image
+NIMDAGAME_IMAGEN_MODEL=imagen-4.0-fast-generate-001
 ```
 
 `.env` is ignored by Git.
@@ -93,10 +95,13 @@ Check provider readiness:
 ```powershell
 python tools/mygame_tools/ui_ai_provider.py check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
+python tools/mygame_tools/ui_ai_provider.py --provider google_imagen_fast check
 python tools/mygame_tools/ui_ai_provider.py --provider openai_images check
 ```
 
 Gemini is the default local provider in `.env.example`. The Gemini adapter uses the Gemini API `generateContent` image endpoint with `gemini-3.1-flash-image` by default. OpenAI Images remains available through `--provider openai_images` or `NIMDAGAME_AI_PROVIDER=openai_images`.
+
+Imagen 4 Fast is also available through `--provider google_imagen_fast`. It uses the Gemini API `predict` endpoint and is useful as a text-to-image fallback when Nano Banana image quotas are unavailable. Imagen does not accept the reference image file in this pipeline; it uses the prompt/style bible text only. Google marks Imagen as deprecated and recommends migrating to Nano Banana before its shutdown date. Imagen API access can require a paid Google AI project; free-tier keys may receive an `only available on paid plans` response.
 
 ## Step 1: Define The UI Kit Contract
 
@@ -187,6 +192,13 @@ Generate with OpenAI explicitly:
 python tools/mygame_tools/ui_ai_provider.py --provider openai_images dry-run --style megami_magazine --slot button_primary
 ```
 
+Generate with Imagen 4 Fast explicitly:
+
+```powershell
+python tools/mygame_tools/ui_ai_provider.py --provider google_imagen_fast dry-run --style megami_magazine --slot button_primary.normal --aspect-ratio 1:1
+python tools/mygame_tools/ui_ai_provider.py --provider google_imagen_fast generate --style megami_magazine --slot button_primary.normal --aspect-ratio 1:1 --write-skin
+```
+
 `--slot button_primary` selects every state for that component. You can also target a single asset or state, for example:
 
 ```powershell
@@ -200,6 +212,7 @@ PowerShell wrapper:
 scripts/ui_generate.ps1 -DryRun -Provider gemini_images -Style neon_arcade
 scripts/ui_generate.ps1 -Provider gemini_images -Style neon_arcade -Slot button_primary
 scripts/ui_generate.ps1 -Provider gemini_images -Style neon_arcade -WriteSkin
+powershell -ExecutionPolicy Bypass -File .\scripts\ui_generate.ps1 -Provider google_imagen_fast -Style megami_magazine -Slot button_primary.normal -AspectRatio 1:1 -WriteSkin
 ```
 
 Generated files are written to:
@@ -326,6 +339,7 @@ python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
 python tools/mygame_tools/ui_ai_provider.py check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images dry-run --style megami_magazine --slot button_primary
+python tools/mygame_tools/ui_ai_provider.py --provider google_imagen_fast dry-run --style megami_magazine --slot button_primary.normal --aspect-ratio 1:1
 ```
 
 The release pipeline also runs UI pipeline validation:
