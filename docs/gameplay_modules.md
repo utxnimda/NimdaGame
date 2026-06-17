@@ -49,6 +49,12 @@ Examples:
 
 Owns combat flow. It should support both turn-based and real-time modes through different controllers over shared primitives.
 
+Code owner:
+
+```text
+core/modules/battle/
+```
+
 Examples:
 
 - Turn queue

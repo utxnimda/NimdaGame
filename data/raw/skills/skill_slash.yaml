@@ -1,8 +1,0 @@
-id: skill_slash
-name: Slash
-target: enemy
-cooldown: 0
-effects:
-  - type: damage
-    element: physical
-    power: 100

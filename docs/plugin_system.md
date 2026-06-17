@@ -1,8 +1,8 @@
 # Plugin System
 
-NimdaGame uses runtime gameplay plugins, not Godot editor plugins.
+NimdaGame uses runtime gameplay and tooling plugins, not Godot editor plugins.
 
-The goal is to let gameplay features come from different implementation technologies while still using one contract:
+The goal is to let features come from different implementation technologies while still using one contract:
 
 - GDScript plugin
 - C++ GDExtension plugin
@@ -20,29 +20,46 @@ func handle_hook(hook_id: String, payload: Dictionary) -> Dictionary
 
 `handle_hook()` must return a `Dictionary`. If a plugin does not need to change anything, return the original payload.
 
-## Manifest
+## Registry
 
-Each plugin has a `plugin.json` file. Enabled plugins are listed in:
+The Godot autoload is:
+
+```text
+PluginRegistry="*res://common/plugins/plugin_registry.gd"
+```
+
+Enabled plugins are listed in:
 
 ```text
 game/plugins/enabled_plugins.json
 ```
+
+The file may contain an empty list while no runtime plugins are active:
+
+```json
+{
+  "schema_version": 1,
+  "plugins": []
+}
+```
+
+## Manifest
 
 Minimal GDScript plugin:
 
 ```json
 {
   "schema_version": 1,
-  "id": "turn_rpg_training_rules",
-  "name": "Turn RPG Training Rules",
+  "id": "example_rules",
+  "name": "Example Rules",
   "version": "0.1.0",
   "implementation": {
     "type": "gdscript",
-    "entry": "res://plugins/turn_rpg_training_rules/plugin.gd"
+    "entry": "res://plugins/example_rules/plugin.gd"
   },
-  "capabilities": ["turn_rpg.rules"],
+  "capabilities": ["example.rules"],
   "hooks": {
-    "turn_rpg.before_damage": {
+    "example.before_action": {
       "priority": 100
     }
   },
@@ -98,7 +115,7 @@ The script receives one JSON argument when `append_context_json` is true:
 
 ```json
 {
-  "hook_id": "turn_rpg.before_damage",
+  "hook_id": "example.before_action",
   "payload": {},
   "config": {},
   "plugin": {}
@@ -117,87 +134,21 @@ priority 50 -> priority 100 -> priority 200
 
 Plugins should avoid depending on registration order.
 
-## Turn RPG Hooks
+## Hook Naming
 
-The playable Turn RPG demo currently exposes:
-
-### `turn_rpg.build_roster`
-
-Called after the base unit list is created and before battle starts.
-
-Payload:
-
-```json
-{
-  "units": [],
-  "log": []
-}
-```
-
-### `turn_rpg.battle_started`
-
-Called after plugins have had a chance to adjust the roster.
-
-Payload:
-
-```json
-{
-  "log": []
-}
-```
-
-### `turn_rpg.before_damage`
-
-Called after base damage and guard reduction, before HP is changed.
-
-Payload:
-
-```json
-{
-  "actor": {},
-  "target": {},
-  "action": {},
-  "damage": 1,
-  "log": []
-}
-```
-
-## Current Sample
-
-The enabled sample is:
+Use a stable namespace for hook IDs:
 
 ```text
-game/plugins/turn_rpg_training_rules/
+<genre_or_module>.<event_name>
 ```
 
-It demonstrates a GDScript rules plugin:
-
-- Adds HP to all party members at battle start.
-- Adds bonus damage to Mage `Fireball`.
-- Writes plugin messages into the battle log.
-
-## Plugin Tool Entries
-
-Plugins can expose a Demo Hub entry with `tool_entry`:
-
-```json
-{
-  "tool_entry": {
-    "title": "UI Forge",
-    "summary": "Generate AI prompt packs and apply UI skins.",
-    "scene_path": "res://scenes/demos/ui_forge_demo.tscn",
-    "order": 400,
-    "loop": ["Choose a style", "Apply generated UI art"],
-    "systems": ["AI provider config", "Template JSON"],
-    "release_checks": ["UI Forge plugin loads"]
-  }
-}
-```
-
-The current UI pipeline is managed by:
+Examples:
 
 ```text
-game/plugins/ui_forge_tool/plugin.json
+turn_rpg.before_damage
+tactics.before_move
+tower_defense.before_wave_start
+idle.before_offline_progress
 ```
 
 ## Validation

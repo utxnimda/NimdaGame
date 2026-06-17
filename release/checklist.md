@@ -5,7 +5,7 @@
 - `main` is clean.
 - YAML source data validates.
 - Godot opens `game/project.godot`.
-- All four demo categories load in the Demo Hub.
+- The framework shell opens at `game/app/scenes/main.tscn`.
 - Export presets exist in `game/export_presets.cfg`.
 - Version number is chosen.
 
@@ -20,8 +20,8 @@
 
 - Launch Windows package if produced.
 - Open Web package locally if produced.
-- Confirm Demo Hub is visible.
-- Select Turn RPG, ARPG / Survivor, Tactics, and Systems Lab.
+- Confirm the framework shell is visible.
+- Confirm plugin load warnings are visible or absent as expected.
 - Confirm no missing script or asset errors appear.
 
 ## Publish

@@ -1,9 +1,0 @@
-id: unit_slime
-name: Slime
-tags:
-  - monster
-stats:
-  hp: 45
-  attack: 8
-  defense: 2
-skills: []

@@ -5,31 +5,13 @@
 Source data is authored as YAML. Runtime data is generated as JSON.
 
 ```text
-data/raw/*.yaml          Human-authored source data
-data/schemas/*.schema.json  Validation schemas
-game/data/generated/*.json  Runtime data consumed by Godot
+data/common/**/*.yaml             Shared source data
+data/genres/<genre>/**/*.yaml     Genre-specific source data
+data/schemas/*.schema.json        Validation schemas
+game/data/generated/*.json        Runtime data consumed by Godot
 ```
 
 The C++ core and Godot runtime should not parse YAML directly.
-
-UI pipeline data is authored directly as JSON because Godot consumes it at edit/runtime:
-
-```text
-game/ui_pipeline/component_catalog.json
-game/ui_pipeline/styles/<style_id>/style.json
-game/ui_pipeline/styles/<style_id>/style_bible.json
-game/ui_pipeline/styles/<style_id>/skin.json
-game/ui_pipeline/templates/**/*.json
-```
-
-Relevant schemas:
-
-```text
-data/schemas/ui_component_catalog.schema.json
-data/schemas/ui_style.schema.json
-data/schemas/ui_style_bible.schema.json
-data/schemas/ui_template.schema.json
-```
 
 ## YAML Rules
 
@@ -55,6 +37,18 @@ stage_forest_001
 wave_forest_001_a
 item_iron_sword
 ```
+
+## Directory Ownership
+
+Shared data goes under `data/common/` only when it is intentionally reusable across multiple genres.
+
+Genre data goes under `data/genres/<genre>/` when it contains genre-specific assumptions, such as:
+
+- Turn queue rules
+- Real-time cooldown rules
+- Grid or tile assumptions
+- Tower placement rules
+- Idle economy curves
 
 ## Example Source YAML
 

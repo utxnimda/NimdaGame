@@ -2,7 +2,7 @@
 
 ## Goal
 
-NimdaGame is intended to be a reusable framework for several lightweight game genres:
+NimdaGame is a reusable framework for several lightweight game genres:
 
 - Turn-based RPG
 - Simple real-time RPG
@@ -11,16 +11,18 @@ NimdaGame is intended to be a reusable framework for several lightweight game ge
 - Tower defense
 - Incremental or idle game
 
-The main engineering goal is to keep gameplay logic portable and testable while still using Godot for fast iteration on UI, scenes, animation, and tools.
+The main engineering goal is to keep gameplay logic portable and testable while still using Godot for fast iteration on presentation, tooling, and game flow.
 
 ## Layer Boundaries
 
 ### Godot Layer
 
-Godot owns everything related to presentation and editor workflow:
+Godot owns presentation and editor workflow:
 
-- Scene composition
-- UI screens and widgets
+- App boot and global flow under `game/app/`
+- Shared runtime helpers under `game/common/`
+- Per-genre scenes and scripts under `game/genres/<genre>/`
+- Shared assets under `game/shared_assets/`
 - Input
 - Animation, VFX, SFX, and music
 - Camera behavior
@@ -46,7 +48,7 @@ It owns:
 - Save-state model
 - Replay-friendly command processing
 
-The core should expose stable data structures and deterministic APIs that can be used by Godot, command-line tools, tests, or a future server.
+Shared infrastructure belongs in `core/common/`. Reusable gameplay systems belong in `core/modules/`. Per-genre orchestration belongs in `core/genres/<genre>/`.
 
 ### Binding Layer
 
@@ -77,7 +79,7 @@ get_plugin_info()
 handle_hook(hook_id, payload)
 ```
 
-The plugin layer may modify gameplay payloads only through explicit hooks. Core rules that must be deterministic and portable should eventually move into `core/`, with GDScript plugins serving as prototype or adapter code.
+The plugin layer may modify payloads only through explicit hooks. Core rules that must be deterministic and portable should eventually move into `core/`, with GDScript plugins serving as prototype or adapter code.
 
 ### Python Tools Layer
 
@@ -89,19 +91,21 @@ Python is used for development-time automation:
 - Balance simulation
 - Batch combat tests
 - Reports for designers
+- Release checks and packaging helpers
 
 Python should not be embedded in the shipped Godot client as a gameplay runtime.
 
 ## Data Flow
 
 ```text
-data/raw/*.yaml
+data/common/*.yaml
+data/genres/<genre>/*.yaml
   -> tools validate schemas and references
   -> tools generate game/data/generated/*.json
   -> Godot loads generated JSON
   -> Godot adapter passes data to C++ core
   -> C++ core returns deterministic results
-  -> Godot presents result through scenes and UI
+  -> Godot presents result through game/genres/<genre> scenes
 ```
 
 ## Determinism
@@ -117,11 +121,10 @@ This is important for tests, replays, debugging, server validation, and balance 
 
 ## First Vertical Slice
 
-The first milestone should implement:
+The next milestone should implement one vertical slice inside a genre package:
 
-1. One YAML unit config.
-2. One YAML skill config.
-3. Python validation and JSON generation.
-4. A C++ combat function that resolves a single attack.
-5. A GDExtension bridge exposing that function to Godot.
-6. A Godot scene displaying the before and after combat state.
+1. One shared or genre-specific YAML config.
+2. Python validation and JSON generation.
+3. A C++ gameplay function that resolves one deterministic action.
+4. A GDExtension bridge exposing that function to Godot.
+5. A Godot scene under `game/genres/<genre>/scenes/` displaying before and after state.
