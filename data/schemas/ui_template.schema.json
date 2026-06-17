@@ -36,7 +36,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "type", "slot", "rect", "text"],
+        "required": ["id", "type", "rect"],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -44,12 +44,15 @@
             "pattern": "^[a-z][a-z0-9_]*$"
           },
           "type": {
-            "enum": ["panel", "button", "bar", "icon"]
+            "enum": ["panel", "button", "bar", "icon", "badge", "divider", "image", "text"]
           },
           "slot": {
             "type": "string"
           },
           "component": {
+            "type": "string"
+          },
+          "state": {
             "type": "string"
           },
           "rect": {
@@ -75,6 +78,48 @@
           },
           "text": {
             "type": "string"
+          },
+          "text_align": {
+            "enum": ["left", "center", "right"]
+          },
+          "text_color": {
+            "type": "string"
+          },
+          "font_size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "image": {
+            "type": "string"
+          },
+          "image_tint": {
+            "type": "string"
+          },
+          "image_padding": {
+            "type": "number"
+          },
+          "preserve_aspect": {
+            "type": "boolean"
+          },
+          "progress": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "fill_color": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "padding_left": {
+            "type": "number"
+          },
+          "padding_top": {
+            "type": "number"
+          },
+          "wrap": {
+            "type": "boolean"
           }
         }
       }

@@ -85,12 +85,14 @@ func _build_ui() -> void:
 	_style_option = OptionButton.new()
 	for index in range(_styles.size()):
 		_style_option.add_item(String(_styles[index].get("label", _styles[index].get("id", ""))), index)
+	_select_option_by_id(_style_option, _styles, "kenney_modern_ui")
 	_style_option.item_selected.connect(_on_selection_changed)
 	left.add_child(_labeled_control("Style", _style_option))
 
 	_template_option = OptionButton.new()
 	for index in range(_templates.size()):
 		_template_option.add_item(String(_templates[index].get("label", _templates[index].get("id", ""))), index)
+	_select_option_by_id(_template_option, _templates, "premium_turn_rpg_combat")
 	_template_option.item_selected.connect(_on_selection_changed)
 	left.add_child(_labeled_control("Template", _template_option))
 
@@ -139,6 +141,13 @@ func _labeled_control(label_text: String, control: Control) -> Control:
 	box.add_child(label)
 	box.add_child(control)
 	return box
+
+
+func _select_option_by_id(option: OptionButton, items: Array, item_id: String) -> void:
+	for index in range(items.size()):
+		if String(items[index].get("id", "")) == item_id:
+			option.select(index)
+			return
 
 
 func _load_current_selection() -> void:

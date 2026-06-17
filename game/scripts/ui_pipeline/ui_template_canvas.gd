@@ -89,10 +89,22 @@ func _draw() -> void:
 func _draw_node(index: int, node: Dictionary) -> void:
 	var rect: Rect2 = _node_screen_rect(index)
 	var node_type: String = String(node.get("type", "panel"))
-	var slot_style: Dictionary = _node_style(node, _default_state_for_node_type(node_type))
-	var text_color: Color = _color_from_hex(String(_skin.get("font_color", "#EEF4F2")), Color(0.95, 0.96, 0.92))
+	var slot_style: Dictionary = _node_style(node, String(node.get("state", _default_state_for_node_type(node_type))))
+	var text_color: Color = _node_text_color(node)
 	var border_color: Color = _color_from_hex(String(slot_style.get("border", "#4C585C")), Color(0.28, 0.32, 0.32))
 	var fill_color: Color = _color_from_hex(String(slot_style.get("tint", slot_style.get("color", "#182024"))), Color(0.11, 0.13, 0.14))
+
+	if node_type == "text":
+		_draw_text_node(rect, node, text_color)
+		return
+
+	if node_type == "image":
+		_draw_image_node(rect, node, text_color)
+		return
+
+	if node_type == "divider":
+		_draw_divider_node(rect, node, slot_style, border_color)
+		return
 
 	_draw_slot_background(rect, slot_style, fill_color, border_color)
 
@@ -100,11 +112,13 @@ func _draw_node(index: int, node: Dictionary) -> void:
 		"bar":
 			_draw_bar(rect, node, fill_color, border_color)
 		"icon":
-			_draw_centered_text(rect, String(node.get("text", "")), text_color)
+			_draw_icon_node(rect, node, text_color)
 		"button":
-			_draw_centered_text(rect, String(node.get("text", "")), text_color)
+			_draw_button_node(rect, node, text_color)
+		"badge":
+			_draw_icon_node(rect, node, text_color)
 		_:
-			_draw_panel_label(rect, String(node.get("text", "")), text_color)
+			_draw_panel_label(rect, node, text_color)
 
 	if index == _selected_index:
 		draw_rect(rect.grow(3), Color(0.86, 0.70, 0.28), false, 2.0)
@@ -124,27 +138,126 @@ func _draw_bar(rect: Rect2, node: Dictionary, fill_color: Color, border_color: C
 	var inner: Rect2 = rect.grow(-6)
 	draw_rect(inner, Color(0.08, 0.09, 0.10), true)
 	var fill_rect: Rect2 = inner
-	fill_rect.size.x *= 0.68
+	fill_rect.size.x *= clamp(float(node.get("progress", 0.68)), 0.0, 1.0)
 	var fill_style: Dictionary = _node_style(node, "fill")
 	var fill_texture: Texture2D = _load_texture(String(fill_style.get("image", "")))
 	if fill_texture != null:
 		draw_texture_rect(fill_texture, fill_rect, false, _texture_modulate(fill_style))
 	else:
-		var bar_fill: Color = _color_from_hex(String(fill_style.get("tint", fill_style.get("color", ""))), fill_color.lightened(0.16))
+		var bar_fill: Color = _color_from_hex(String(node.get("fill_color", fill_style.get("tint", fill_style.get("color", "")))), fill_color.lightened(0.16))
 		draw_rect(fill_rect, bar_fill, true)
 	draw_rect(rect, border_color, false, 2.0)
+	var label: String = String(node.get("text", ""))
+	if not label.is_empty():
+		_draw_centered_text(rect, label, _node_text_color(node), int(node.get("font_size", 13)))
 
 
-func _draw_panel_label(rect: Rect2, label: String, text_color: Color) -> void:
+func _draw_panel_label(rect: Rect2, node: Dictionary, text_color: Color) -> void:
+	var label: String = String(node.get("text", ""))
+	if label.is_empty():
+		return
 	var font: Font = ThemeDB.get_fallback_font()
-	draw_string(font, rect.position + Vector2(12, 24), label, HORIZONTAL_ALIGNMENT_LEFT, rect.size.x - 24, FALLBACK_FONT_SIZE, text_color)
+	var font_size: int = int(node.get("font_size", FALLBACK_FONT_SIZE))
+	draw_string(font, rect.position + Vector2(float(node.get("padding_left", 12)), float(node.get("padding_top", 24))), label, _text_alignment(node, HORIZONTAL_ALIGNMENT_LEFT), rect.size.x - 24, font_size, text_color)
 
 
-func _draw_centered_text(rect: Rect2, label: String, text_color: Color) -> void:
+func _draw_button_node(rect: Rect2, node: Dictionary, text_color: Color) -> void:
+	var image_path: String = String(node.get("image", ""))
+	if not image_path.is_empty():
+		var icon_rect: Rect2 = Rect2(rect.position + Vector2(12, rect.size.y * 0.5 - 10), Vector2(20, 20))
+		_draw_texture_in_rect(icon_rect, image_path, _node_image_modulate(node), true)
+		var text_rect: Rect2 = Rect2(rect.position + Vector2(36, 0), rect.size - Vector2(44, 0))
+		_draw_centered_text(text_rect, String(node.get("text", "")), text_color, int(node.get("font_size", FALLBACK_FONT_SIZE)))
+	else:
+		_draw_centered_text(rect, String(node.get("text", "")), text_color, int(node.get("font_size", FALLBACK_FONT_SIZE)))
+
+
+func _draw_icon_node(rect: Rect2, node: Dictionary, text_color: Color) -> void:
+	var image_path: String = String(node.get("image", ""))
+	if not image_path.is_empty():
+		var image_padding: float = float(node.get("image_padding", 12))
+		_draw_texture_in_rect(rect.grow(-image_padding), image_path, _node_image_modulate(node), bool(node.get("preserve_aspect", true)))
+	var label: String = String(node.get("text", ""))
+	if not label.is_empty():
+		_draw_centered_text(rect, label, text_color, int(node.get("font_size", FALLBACK_FONT_SIZE)))
+
+
+func _draw_text_node(rect: Rect2, node: Dictionary, text_color: Color) -> void:
 	var font: Font = ThemeDB.get_fallback_font()
-	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, FALLBACK_FONT_SIZE)
-	var pos: Vector2 = rect.position + (rect.size - text_size) * 0.5 + Vector2(0, FALLBACK_FONT_SIZE)
-	draw_string(font, pos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, FALLBACK_FONT_SIZE, text_color)
+	var label: String = String(node.get("text", ""))
+	if label.is_empty():
+		return
+	var font_size: int = int(node.get("font_size", FALLBACK_FONT_SIZE))
+	var line_height: float = float(font_size) * 1.25
+	var lines: Array = _text_lines(font, label, font_size, rect.size.x, bool(node.get("wrap", false)))
+	for index in range(lines.size()):
+		var baseline: Vector2 = rect.position + Vector2(0, float(font_size) + float(index) * line_height)
+		if baseline.y > rect.end.y:
+			break
+		draw_string(font, baseline, String(lines[index]), _text_alignment(node, HORIZONTAL_ALIGNMENT_LEFT), rect.size.x, font_size, text_color)
+
+
+func _draw_image_node(rect: Rect2, node: Dictionary, _text_color: Color) -> void:
+	_draw_texture_in_rect(rect, String(node.get("image", "")), _node_image_modulate(node), bool(node.get("preserve_aspect", true)))
+
+
+func _draw_divider_node(rect: Rect2, node: Dictionary, slot_style: Dictionary, border_color: Color) -> void:
+	var image_path: String = String(node.get("image", ""))
+	if image_path.is_empty() and (node.has("slot") or node.has("component")):
+		image_path = String(slot_style.get("image", ""))
+	if not image_path.is_empty():
+		var texture: Texture2D = _load_texture(image_path)
+		if texture != null:
+			draw_texture_rect(texture, rect, false, _texture_modulate(slot_style))
+			return
+	var line_color: Color = _color_from_hex(String(node.get("color", "")), border_color)
+	draw_line(rect.position + Vector2(0, rect.size.y * 0.5), rect.position + Vector2(rect.size.x, rect.size.y * 0.5), line_color, max(1.0, rect.size.y))
+
+
+func _draw_centered_text(rect: Rect2, label: String, text_color: Color, font_size: int = FALLBACK_FONT_SIZE) -> void:
+	if label.is_empty():
+		return
+	var font: Font = ThemeDB.get_fallback_font()
+	var text_size: Vector2 = font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
+	var pos: Vector2 = rect.position + (rect.size - text_size) * 0.5 + Vector2(0, font_size)
+	draw_string(font, pos, label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color)
+
+
+func _draw_texture_in_rect(rect: Rect2, image_path: String, modulate: Color, preserve_aspect: bool) -> void:
+	var texture: Texture2D = _load_texture(image_path)
+	if texture == null:
+		return
+	var draw_rect_target: Rect2 = rect
+	if preserve_aspect:
+		var texture_size: Vector2 = texture.get_size()
+		if texture_size.x > 0.0 and texture_size.y > 0.0:
+			var scale_factor: float = min(rect.size.x / texture_size.x, rect.size.y / texture_size.y)
+			var fitted_size: Vector2 = texture_size * scale_factor
+			draw_rect_target = Rect2(rect.position + (rect.size - fitted_size) * 0.5, fitted_size)
+	draw_texture_rect(texture, draw_rect_target, false, modulate)
+
+
+func _text_lines(font: Font, label: String, font_size: int, width: float, wrap: bool) -> Array:
+	var output: Array = []
+	for raw_line in label.split("\n"):
+		var line: String = String(raw_line)
+		if not wrap:
+			output.append(line)
+			continue
+		var words: PackedStringArray = line.split(" ")
+		var current: String = ""
+		for word_value in words:
+			var word: String = String(word_value)
+			var candidate: String = word if current.is_empty() else "%s %s" % [current, word]
+			var candidate_width: float = font.get_string_size(candidate, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+			if candidate_width <= width or current.is_empty():
+				current = candidate
+			else:
+				output.append(current)
+				current = word
+		if not current.is_empty():
+			output.append(current)
+	return output
 
 
 func _find_node_at(position: Vector2) -> int:
@@ -214,6 +327,25 @@ func _texture_modulate(style: Dictionary) -> Color:
 	if tint.is_empty():
 		return Color.WHITE
 	return _color_from_hex(tint, Color.WHITE)
+
+
+func _node_text_color(node: Dictionary) -> Color:
+	var default_color: Color = _color_from_hex(String(_skin.get("font_color", "#EEF4F2")), Color(0.95, 0.96, 0.92))
+	return _color_from_hex(String(node.get("text_color", "")), default_color)
+
+
+func _node_image_modulate(node: Dictionary) -> Color:
+	return _color_from_hex(String(node.get("image_tint", "")), Color.WHITE)
+
+
+func _text_alignment(node: Dictionary, fallback: int) -> int:
+	match String(node.get("text_align", "")).to_lower():
+		"center":
+			return HORIZONTAL_ALIGNMENT_CENTER
+		"right":
+			return HORIZONTAL_ALIGNMENT_RIGHT
+		_:
+			return fallback
 
 
 func _load_texture(path: String) -> Texture2D:

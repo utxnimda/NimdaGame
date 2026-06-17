@@ -1,0 +1,290 @@
+{
+  "schema_version": 1,
+  "id": "premium_tower_defense_control",
+  "label": "Premium Tower Defense Control",
+  "canvas_size": [1280, 720],
+  "nodes": [
+    {
+      "id": "wave_header",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [24, 18, 1232, 54],
+      "text": ""
+    },
+    {
+      "id": "wave_title",
+      "type": "text",
+      "rect": [44, 34, 186, 22],
+      "text": "WAVE 17 / 30",
+      "font_size": 18,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "next_wave_bar",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [252, 34, 220, 20],
+      "text": "NEXT WAVE 00:26",
+      "font_size": 11,
+      "progress": 0.58,
+      "fill_color": "#F2C94C"
+    },
+    {
+      "id": "lives_icon",
+      "type": "image",
+      "rect": [948, 31, 26, 26],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/checkmark.png"
+    },
+    {
+      "id": "lives_value",
+      "type": "text",
+      "rect": [984, 34, 72, 20],
+      "text": "LIVES 18",
+      "font_size": 14,
+      "text_color": "#7BC96F"
+    },
+    {
+      "id": "gold_icon",
+      "type": "image",
+      "rect": [1088, 31, 26, 26],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "gold_value",
+      "type": "text",
+      "rect": [1124, 34, 82, 20],
+      "text": "3,420",
+      "font_size": 14,
+      "text_color": "#F7D77A"
+    },
+    {
+      "id": "map_panel",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [24, 92, 858, 452],
+      "text": ""
+    },
+    {
+      "id": "path_line_a",
+      "type": "divider",
+      "rect": [78, 190, 280, 8],
+      "color": "#5D7180"
+    },
+    {
+      "id": "path_line_b",
+      "type": "divider",
+      "rect": [352, 190, 8, 172],
+      "color": "#5D7180"
+    },
+    {
+      "id": "path_line_c",
+      "type": "divider",
+      "rect": [352, 356, 364, 8],
+      "color": "#5D7180"
+    },
+    {
+      "id": "path_line_d",
+      "type": "divider",
+      "rect": [710, 240, 8, 124],
+      "color": "#5D7180"
+    },
+    {
+      "id": "path_line_e",
+      "type": "divider",
+      "rect": [710, 240, 126, 8],
+      "color": "#5D7180"
+    },
+    {
+      "id": "tower_a",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [190, 246, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png",
+      "image_padding": 14
+    },
+    {
+      "id": "tower_b",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [486, 274, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png",
+      "image_padding": 14
+    },
+    {
+      "id": "tower_selected",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [632, 420, 72, 72],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png",
+      "image_padding": 16
+    },
+    {
+      "id": "enemy_cluster_a",
+      "type": "image",
+      "rect": [312, 170, 28, 28],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png"
+    },
+    {
+      "id": "enemy_cluster_b",
+      "type": "image",
+      "rect": [694, 338, 28, 28],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png"
+    },
+    {
+      "id": "range_ring_label",
+      "type": "text",
+      "rect": [584, 500, 174, 22],
+      "text": "SELECTED TOWER RANGE",
+      "font_size": 13,
+      "text_color": "#F2C94C"
+    },
+    {
+      "id": "upgrade_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [906, 92, 350, 452],
+      "text": "ARC TOWER MK.II",
+      "font_size": 17
+    },
+    {
+      "id": "tower_icon_large",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [936, 142, 86, 96],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png",
+      "image_padding": 20
+    },
+    {
+      "id": "tower_dps",
+      "type": "text",
+      "rect": [1040, 152, 142, 24],
+      "text": "DPS 284",
+      "font_size": 18,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "tower_role",
+      "type": "text",
+      "rect": [1040, 184, 170, 20],
+      "text": "Chain lightning / armor break",
+      "font_size": 12,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "tower_xp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [936, 268, 270, 22],
+      "text": "TOWER XP 68%",
+      "font_size": 11,
+      "progress": 0.68,
+      "fill_color": "#39A9E0"
+    },
+    {
+      "id": "upgrade_damage",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [936, 322, 270, 44],
+      "text": "Upgrade Damage / 620",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/plus.png"
+    },
+    {
+      "id": "upgrade_range",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [936, 378, 270, 44],
+      "text": "Upgrade Range / 480",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png"
+    },
+    {
+      "id": "sell_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [936, 454, 130, 42],
+      "text": "Sell",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/trashcan.png"
+    },
+    {
+      "id": "priority_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [1078, 454, 128, 42],
+      "text": "Priority",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/gear.png"
+    },
+    {
+      "id": "build_tray",
+      "type": "panel",
+      "component": "dialog_box",
+      "slot": "panel_secondary",
+      "rect": [24, 570, 1232, 128],
+      "text": ""
+    },
+    {
+      "id": "build_title",
+      "type": "text",
+      "rect": [52, 594, 170, 22],
+      "text": "BUILD TOWERS",
+      "font_size": 16,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "tower_card_1",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [238, 598, 162, 64],
+      "text": "Arrow / 140",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png"
+    },
+    {
+      "id": "tower_card_2",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [418, 598, 162, 64],
+      "text": "Arc / 220",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png"
+    },
+    {
+      "id": "tower_card_3",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [598, 598, 162, 64],
+      "text": "Slow / 180",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "tower_card_4",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [778, 598, 162, 64],
+      "text": "Mortar / 360",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/trophy.png"
+    },
+    {
+      "id": "start_wave",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [1022, 604, 184, 54],
+      "text": "Start Wave",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/input_prompts/png/Generic/Default/generic_button_trigger_a_fill.png"
+    }
+  ]
+}

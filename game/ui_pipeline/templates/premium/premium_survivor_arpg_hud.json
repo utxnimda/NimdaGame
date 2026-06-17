@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "id": "premium_survivor_arpg_hud",
+  "label": "Premium Survivor ARPG HUD",
+  "canvas_size": [1280, 720],
+  "nodes": [
+    {
+      "id": "top_hud",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [356, 18, 568, 62],
+      "text": ""
+    },
+    {
+      "id": "timer",
+      "type": "text",
+      "rect": [560, 28, 160, 32],
+      "text": "08:42",
+      "text_align": "center",
+      "font_size": 32,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "wave_text",
+      "type": "text",
+      "rect": [404, 42, 124, 18],
+      "text": "WAVE 06",
+      "font_size": 14,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "threat_text",
+      "type": "text",
+      "rect": [760, 42, 118, 18],
+      "text": "THREAT HIGH",
+      "font_size": 14,
+      "text_color": "#F2C94C"
+    },
+    {
+      "id": "quest_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [24, 24, 282, 166],
+      "text": "QUEST TRACKER",
+      "font_size": 15
+    },
+    {
+      "id": "quest_main",
+      "type": "text",
+      "rect": [50, 72, 220, 22],
+      "text": "Survive until extraction",
+      "font_size": 16,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "quest_sub",
+      "type": "text",
+      "rect": [50, 104, 214, 42],
+      "text": "Destroy 2 elite nests to unlock the final relic chest.",
+      "font_size": 12,
+      "text_color": "#B8C7D6",
+      "wrap": true
+    },
+    {
+      "id": "quest_progress",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [50, 152, 210, 20],
+      "text": "NESTS 1/2",
+      "font_size": 11,
+      "progress": 0.5,
+      "fill_color": "#F2C94C"
+    },
+    {
+      "id": "minimap_panel",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [1048, 24, 208, 208],
+      "text": ""
+    },
+    {
+      "id": "minimap_title",
+      "type": "text",
+      "rect": [1070, 42, 120, 18],
+      "text": "MINIMAP",
+      "font_size": 13,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "minimap_cross_h",
+      "type": "divider",
+      "rect": [1074, 128, 156, 2],
+      "color": "#334B5B"
+    },
+    {
+      "id": "minimap_cross_v",
+      "type": "divider",
+      "rect": [1152, 66, 2, 142],
+      "color": "#334B5B"
+    },
+    {
+      "id": "minimap_player",
+      "type": "image",
+      "rect": [1138, 114, 30, 30],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "minimap_elite",
+      "type": "image",
+      "rect": [1202, 82, 22, 22],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png"
+    },
+    {
+      "id": "pickup_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [1000, 258, 256, 112],
+      "text": "RECENT LOOT",
+      "font_size": 14
+    },
+    {
+      "id": "loot_icon_a",
+      "type": "image",
+      "rect": [1028, 306, 30, 30],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/plus.png"
+    },
+    {
+      "id": "loot_text_a",
+      "type": "text",
+      "rect": [1070, 306, 144, 18],
+      "text": "Magnet Range +8%",
+      "font_size": 13,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "center_notification",
+      "type": "panel",
+      "component": "dialog_box",
+      "slot": "panel_secondary",
+      "rect": [438, 112, 404, 86],
+      "text": ""
+    },
+    {
+      "id": "level_up_icon",
+      "type": "image",
+      "rect": [468, 134, 38, 38],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/trophy.png"
+    },
+    {
+      "id": "level_up_text",
+      "type": "text",
+      "rect": [522, 128, 196, 24],
+      "text": "LEVEL UP READY",
+      "font_size": 19,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "level_up_hint",
+      "type": "text",
+      "rect": [522, 158, 250, 18],
+      "text": "Open upgrade draft after clearing nearby enemies.",
+      "font_size": 12,
+      "text_color": "#B8C7D6",
+      "wrap": true
+    },
+    {
+      "id": "boss_warning_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [420, 218, 440, 54],
+      "text": ""
+    },
+    {
+      "id": "boss_warning_text",
+      "type": "text",
+      "rect": [462, 234, 356, 22],
+      "text": "ELITE SWARM ENTERING FROM NORTH",
+      "text_align": "center",
+      "font_size": 17,
+      "text_color": "#F2C94C"
+    },
+    {
+      "id": "bottom_panel",
+      "type": "panel",
+      "component": "dialog_box",
+      "slot": "panel_secondary",
+      "rect": [220, 574, 840, 124],
+      "text": ""
+    },
+    {
+      "id": "portrait",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [244, 600, 70, 76],
+      "text": "N",
+      "font_size": 24
+    },
+    {
+      "id": "hp_bar",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [334, 604, 246, 24],
+      "text": "HP 314 / 420",
+      "font_size": 12,
+      "progress": 0.75,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "xp_bar",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [334, 642, 246, 20],
+      "text": "XP 82%",
+      "font_size": 11,
+      "progress": 0.82,
+      "fill_color": "#39A9E0"
+    },
+    {
+      "id": "skill_1",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [618, 600, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png",
+      "image_padding": 15
+    },
+    {
+      "id": "skill_1_cd",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [618, 672, 62, 12],
+      "text": "",
+      "progress": 0.92,
+      "fill_color": "#7BC96F"
+    },
+    {
+      "id": "skill_2",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [696, 600, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png",
+      "image_padding": 15
+    },
+    {
+      "id": "skill_2_cd",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [696, 672, 62, 12],
+      "text": "",
+      "progress": 0.38,
+      "fill_color": "#F2C94C"
+    },
+    {
+      "id": "skill_3",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [774, 600, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/plus.png",
+      "image_padding": 15
+    },
+    {
+      "id": "skill_3_cd",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [774, 672, 62, 12],
+      "text": "",
+      "progress": 0.66,
+      "fill_color": "#C78DFF"
+    },
+    {
+      "id": "skill_4",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [852, 600, 62, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png",
+      "image_padding": 15
+    },
+    {
+      "id": "skill_4_cd",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [852, 672, 62, 12],
+      "text": "",
+      "progress": 0.2,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "dash_prompt",
+      "type": "image",
+      "rect": [942, 612, 38, 38],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/input_prompts/png/Generic/Default/generic_button_trigger_a_outline.png"
+    },
+    {
+      "id": "dash_text",
+      "type": "text",
+      "rect": [986, 620, 52, 18],
+      "text": "Dash",
+      "font_size": 13,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "resource_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [24, 604, 172, 94],
+      "text": ""
+    },
+    {
+      "id": "coins_icon",
+      "type": "image",
+      "rect": [48, 626, 26, 26],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "coins_value",
+      "type": "text",
+      "rect": [84, 628, 82, 18],
+      "text": "14,820",
+      "font_size": 15,
+      "text_color": "#F7D77A"
+    },
+    {
+      "id": "kills_icon",
+      "type": "image",
+      "rect": [48, 662, 26, 26],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png"
+    },
+    {
+      "id": "kills_value",
+      "type": "text",
+      "rect": [84, 664, 82, 18],
+      "text": "KILLS 693",
+      "font_size": 13,
+      "text_color": "#FFFFFF"
+    }
+  ]
+}

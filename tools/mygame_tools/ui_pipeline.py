@@ -525,13 +525,16 @@ def _validate_template(
         node_id = node.get("id", "<missing>")
         slot_id = node.get("slot")
         component_id = node.get("component")
-        if slot_id not in slot_ids:
+        if slot_id is not None and slot_id not in slot_ids:
             errors.append(f"Template {template_id} node {node_id} references unknown slot: {slot_id}")
         if component_id is not None and component_id not in component_ids:
             errors.append(f"Template {template_id} node {node_id} references unknown component: {component_id}")
         rect = node.get("rect")
         if not isinstance(rect, list) or len(rect) != 4:
             errors.append(f"Template {template_id} node {node_id} rect must have four values.")
+        image_path = node.get("image")
+        if isinstance(image_path, str) and image_path and not resolve_resource_path(image_path).exists():
+            errors.append(f"Template {template_id} node {node_id} image does not exist: {image_path}")
 
 
 def _validate_components(components: list[dict[str, Any]], errors: list[str]) -> None:

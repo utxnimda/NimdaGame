@@ -25,6 +25,31 @@
       "id": "megami_main_menu",
       "label": "Megami Main Menu",
       "path": "res://ui_pipeline/templates/megami/megami_main_menu.json"
+    },
+    {
+      "id": "premium_turn_rpg_combat",
+      "label": "Premium Turn RPG Combat",
+      "path": "res://ui_pipeline/templates/premium/premium_turn_rpg_combat.json"
+    },
+    {
+      "id": "premium_tactics_command_board",
+      "label": "Premium Tactics Command Board",
+      "path": "res://ui_pipeline/templates/premium/premium_tactics_command_board.json"
+    },
+    {
+      "id": "premium_survivor_arpg_hud",
+      "label": "Premium Survivor ARPG HUD",
+      "path": "res://ui_pipeline/templates/premium/premium_survivor_arpg_hud.json"
+    },
+    {
+      "id": "premium_tower_defense_control",
+      "label": "Premium Tower Defense Control",
+      "path": "res://ui_pipeline/templates/premium/premium_tower_defense_control.json"
+    },
+    {
+      "id": "premium_idle_strategy_dashboard",
+      "label": "Premium Idle Strategy Dashboard",
+      "path": "res://ui_pipeline/templates/premium/premium_idle_strategy_dashboard.json"
     }
   ]
 }

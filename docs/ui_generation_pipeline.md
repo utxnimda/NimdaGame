@@ -299,6 +299,14 @@ Base templates live in:
 game/ui_pipeline/templates/base/
 ```
 
+Production-style template packs live in:
+
+```text
+game/ui_pipeline/templates/premium/
+```
+
+These templates use the same component/skin contract, but include denser game-ready structures such as resource strips, command decks, enemy intent panels, tactical grids, build trays, upgrade cards, minimaps, input prompts, and icon overlays from imported asset libraries.
+
 Each template is JSON:
 
 ```json
@@ -321,6 +329,8 @@ Each template is JSON:
 ```
 
 `component` is preferred. `slot` remains as a compatibility fallback for older skins.
+
+Templates may also use `text`, `image`, `divider`, and `badge` nodes for non-stretch UI details. Optional node fields include `font_size`, `text_color`, `text_align`, `wrap`, `image`, `image_padding`, `progress`, and `fill_color`.
 
 In UI Forge, drag nodes on the preview canvas and save a custom copy. The custom save path uses Godot `user://`, so it is safe for local experiments and packaged builds.
 

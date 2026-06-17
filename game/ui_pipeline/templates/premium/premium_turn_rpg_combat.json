@@ -1,0 +1,483 @@
+{
+  "schema_version": 1,
+  "id": "premium_turn_rpg_combat",
+  "label": "Premium Turn RPG Combat",
+  "canvas_size": [1280, 720],
+  "nodes": [
+    {
+      "id": "top_frame",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [24, 18, 1232, 48],
+      "text": ""
+    },
+    {
+      "id": "encounter_title",
+      "type": "text",
+      "rect": [44, 31, 310, 24],
+      "text": "RUINED ARCHIVE / FLOOR 03",
+      "font_size": 15,
+      "text_color": "#F7F0D0"
+    },
+    {
+      "id": "round_counter",
+      "type": "text",
+      "rect": [548, 30, 184, 24],
+      "text": "ROUND 04",
+      "text_align": "center",
+      "font_size": 18,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "resource_gold_icon",
+      "type": "image",
+      "rect": [1104, 28, 22, 22],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "resource_gold",
+      "type": "text",
+      "rect": [1132, 31, 92, 20],
+      "text": "2,480",
+      "font_size": 15,
+      "text_color": "#F7D77A"
+    },
+    {
+      "id": "party_roster_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [24, 82, 238, 536],
+      "text": "PARTY",
+      "font_size": 15
+    },
+    {
+      "id": "hero_a_card",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [44, 122, 198, 104],
+      "text": ""
+    },
+    {
+      "id": "hero_a_portrait",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [58, 138, 56, 66],
+      "text": "A",
+      "font_size": 20
+    },
+    {
+      "id": "hero_a_name",
+      "type": "text",
+      "rect": [124, 140, 96, 18],
+      "text": "MIRA",
+      "font_size": 15,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "hero_a_hp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 166, 94, 16],
+      "text": "HP 78%",
+      "font_size": 10,
+      "progress": 0.78,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "hero_a_mp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 188, 94, 14],
+      "text": "MP 42",
+      "font_size": 9,
+      "progress": 0.48,
+      "fill_color": "#39A9E0"
+    },
+    {
+      "id": "hero_b_card",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [44, 238, 198, 104],
+      "text": ""
+    },
+    {
+      "id": "hero_b_portrait",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [58, 254, 56, 66],
+      "text": "B",
+      "font_size": 20
+    },
+    {
+      "id": "hero_b_name",
+      "type": "text",
+      "rect": [124, 256, 96, 18],
+      "text": "KANE",
+      "font_size": 15,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "hero_b_hp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 282, 94, 16],
+      "text": "HP 61%",
+      "font_size": 10,
+      "progress": 0.61,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "hero_b_mp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 304, 94, 14],
+      "text": "GUARD",
+      "font_size": 9,
+      "progress": 0.86,
+      "fill_color": "#7BC96F"
+    },
+    {
+      "id": "hero_c_card",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [44, 354, 198, 104],
+      "text": ""
+    },
+    {
+      "id": "hero_c_portrait",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [58, 370, 56, 66],
+      "text": "C",
+      "font_size": 20
+    },
+    {
+      "id": "hero_c_name",
+      "type": "text",
+      "rect": [124, 372, 96, 18],
+      "text": "LYRA",
+      "font_size": 15,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "hero_c_hp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 398, 94, 16],
+      "text": "HP 92%",
+      "font_size": 10,
+      "progress": 0.92,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "hero_c_mp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [124, 420, 94, 14],
+      "text": "FOCUS",
+      "font_size": 9,
+      "progress": 0.54,
+      "fill_color": "#C78DFF"
+    },
+    {
+      "id": "turn_order_label",
+      "type": "text",
+      "rect": [50, 486, 156, 18],
+      "text": "NEXT ACTORS",
+      "font_size": 13,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "turn_icon_1",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [52, 514, 42, 42],
+      "text": "A"
+    },
+    {
+      "id": "turn_icon_2",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [102, 514, 42, 42],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png",
+      "image_padding": 11
+    },
+    {
+      "id": "turn_icon_3",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [152, 514, 42, 42],
+      "text": "B"
+    },
+    {
+      "id": "turn_icon_4",
+      "type": "icon",
+      "component": "icon_frame",
+      "slot": "icon_frame",
+      "rect": [202, 514, 42, 42],
+      "text": "C"
+    },
+    {
+      "id": "battlefield_panel",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [282, 82, 690, 394],
+      "text": ""
+    },
+    {
+      "id": "battlefield_caption",
+      "type": "text",
+      "rect": [306, 104, 280, 24],
+      "text": "TARGETING MODE / SINGLE ENEMY",
+      "font_size": 14,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "enemy_alpha_card",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [572, 138, 190, 108],
+      "text": ""
+    },
+    {
+      "id": "enemy_alpha_icon",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [594, 160, 54, 62],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png",
+      "image_padding": 12
+    },
+    {
+      "id": "enemy_alpha_name",
+      "type": "text",
+      "rect": [664, 162, 82, 18],
+      "text": "WARDEN",
+      "font_size": 14,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "enemy_alpha_hp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [664, 190, 72, 16],
+      "text": "43%",
+      "font_size": 10,
+      "progress": 0.43,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "enemy_beta_card",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [748, 264, 176, 100],
+      "text": ""
+    },
+    {
+      "id": "enemy_beta_icon",
+      "type": "icon",
+      "component": "portrait_frame",
+      "slot": "icon_frame",
+      "rect": [768, 284, 50, 58],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/exclamation.png",
+      "image_padding": 12
+    },
+    {
+      "id": "enemy_beta_name",
+      "type": "text",
+      "rect": [832, 288, 72, 18],
+      "text": "ECHO",
+      "font_size": 14,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "enemy_beta_hp",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [832, 316, 68, 16],
+      "text": "71%",
+      "font_size": 10,
+      "progress": 0.71,
+      "fill_color": "#E34E46"
+    },
+    {
+      "id": "intent_panel",
+      "type": "panel",
+      "component": "panel_secondary",
+      "slot": "panel_secondary",
+      "rect": [996, 82, 260, 394],
+      "text": "ENEMY INTENT",
+      "font_size": 15
+    },
+    {
+      "id": "intent_warning_icon",
+      "type": "image",
+      "rect": [1026, 132, 42, 42],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/warning.png"
+    },
+    {
+      "id": "intent_title",
+      "type": "text",
+      "rect": [1082, 132, 126, 24],
+      "text": "CLEAVE",
+      "font_size": 18,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "intent_detail",
+      "type": "text",
+      "rect": [1082, 160, 132, 40],
+      "text": "Hits front row / Breaks guard",
+      "font_size": 12,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "weakness_title",
+      "type": "text",
+      "rect": [1026, 230, 166, 20],
+      "text": "WEAKNESS WINDOW",
+      "font_size": 13,
+      "text_color": "#B8C7D6"
+    },
+    {
+      "id": "weakness_bar",
+      "type": "bar",
+      "component": "status_bar",
+      "slot": "status_bar",
+      "rect": [1026, 258, 196, 22],
+      "text": "STAGGER 64%",
+      "font_size": 11,
+      "progress": 0.64,
+      "fill_color": "#F2C94C"
+    },
+    {
+      "id": "loot_hint",
+      "type": "panel",
+      "component": "panel_primary",
+      "slot": "panel_primary",
+      "rect": [1026, 322, 196, 96],
+      "text": ""
+    },
+    {
+      "id": "loot_icon",
+      "type": "image",
+      "rect": [1048, 346, 32, 32],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/trophy.png"
+    },
+    {
+      "id": "loot_text",
+      "type": "text",
+      "rect": [1090, 342, 106, 44],
+      "text": "Rare relic chance after stagger",
+      "font_size": 12,
+      "text_color": "#F7F0D0",
+      "wrap": true
+    },
+    {
+      "id": "command_panel",
+      "type": "panel",
+      "component": "dialog_box",
+      "slot": "panel_secondary",
+      "rect": [282, 496, 974, 202],
+      "text": ""
+    },
+    {
+      "id": "active_unit",
+      "type": "text",
+      "rect": [312, 518, 254, 26],
+      "text": "MIRA / SHADOW DUELIST",
+      "font_size": 18,
+      "text_color": "#FFFFFF"
+    },
+    {
+      "id": "action_hint",
+      "type": "text",
+      "rect": [312, 552, 384, 22],
+      "text": "Choose a command. Predicted damage and guard impact update on hover.",
+      "font_size": 13,
+      "text_color": "#B8C7D6",
+      "wrap": true
+    },
+    {
+      "id": "attack_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [312, 604, 138, 44],
+      "text": "Attack",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/target.png"
+    },
+    {
+      "id": "skill_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [464, 604, 138, 44],
+      "text": "Skill",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/star.png"
+    },
+    {
+      "id": "guard_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [616, 604, 138, 44],
+      "text": "Guard",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/checkmark.png"
+    },
+    {
+      "id": "item_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [768, 604, 138, 44],
+      "text": "Item",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/shoppingBasket.png"
+    },
+    {
+      "id": "escape_button",
+      "type": "button",
+      "component": "button_primary",
+      "slot": "button_primary",
+      "rect": [920, 604, 138, 44],
+      "text": "Tactic",
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/game_icons/png/White/2x/gear.png"
+    },
+    {
+      "id": "input_prompt_a",
+      "type": "image",
+      "rect": [1088, 608, 34, 34],
+      "image": "res://ui_pipeline/generated/kenney_asset_library/external/library/input_prompts/png/Generic/Default/generic_button_trigger_a.png"
+    },
+    {
+      "id": "input_prompt_text",
+      "type": "text",
+      "rect": [1128, 616, 86, 18],
+      "text": "Confirm",
+      "font_size": 13,
+      "text_color": "#B8C7D6"
+    }
+  ]
+}
