@@ -1,5 +1,7 @@
 # NimdaGame
 
+Languages: English | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 NimdaGame is a reusable Godot-based game framework for lightweight RPG-like projects:
 
 - Turn-based RPG
