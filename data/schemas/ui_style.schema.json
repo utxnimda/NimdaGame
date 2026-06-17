@@ -18,7 +18,7 @@
       "minLength": 1
     },
     "reference_mode": {
-      "enum": ["text_style", "image_reference"]
+      "enum": ["text_style", "image_reference", "external_asset_pack"]
     },
     "style_prompt": {
       "type": "string",
@@ -47,6 +47,25 @@
         },
         "naming": {
           "type": "string"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["type", "manifest", "licenses"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": ["external_asset_pack"]
+        },
+        "manifest": {
+          "type": "string"
+        },
+        "licenses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

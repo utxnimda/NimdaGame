@@ -18,6 +18,12 @@
       "label": "Megami Magazine Collage",
       "style_path": "res://ui_pipeline/styles/megami_magazine/style.json",
       "skin_path": "res://ui_pipeline/styles/megami_magazine/skin.json"
+    },
+    {
+      "id": "kenney_rpg",
+      "label": "Kenney RPG UI",
+      "style_path": "res://ui_pipeline/styles/kenney_rpg/style.json",
+      "skin_path": "res://ui_pipeline/styles/kenney_rpg/skin.json"
     }
   ]
 }

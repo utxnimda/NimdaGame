@@ -33,6 +33,7 @@ game/plugins/enabled_plugins.json
 game/ui_pipeline/
   asset_slots.json                  Legacy required UI image slots
   component_catalog.json            Canonical reusable UI components and states
+  import_manifests/*.json           External asset pack import recipes
   styles/index.json                 Style registry
   styles/<style_id>/style.json      AI style prompt and output contract
   styles/<style_id>/style_bible.json Palette, motifs, materials, and component rules
@@ -114,6 +115,50 @@ Imagen 4 Fast is also available through `--provider google_imagen_fast`. It uses
 - a component-specific prompt fragment
 
 This is what prevents AI generation from becoming "one picture with changed colors". The pipeline asks for concrete reusable pieces and states.
+
+## Import External UI Packs
+
+External UI packs can be converted into the same component/state skin format used by AI-generated art. The first built-in manifest targets Kenney's CC0 UI packs:
+
+```text
+game/ui_pipeline/import_manifests/kenney_rpg.json
+```
+
+List import manifests:
+
+```powershell
+python tools/mygame_tools/ui_asset_importer.py list
+```
+
+Download, extract, import, and register the Kenney RPG skin:
+
+```powershell
+python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --download --overwrite
+```
+
+If the zip files were downloaded manually, extract them into a source root with these folder names:
+
+```text
+<source-root>/ui_pack/
+<source-root>/rpg_expansion/
+<source-root>/fantasy_borders/
+```
+
+Then import from that root:
+
+```powershell
+python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --source-root C:\path\to\source-root --overwrite
+```
+
+The importer writes:
+
+```text
+game/ui_pipeline/generated/kenney_rpg/external/
+game/ui_pipeline/styles/kenney_rpg/style.json
+game/ui_pipeline/styles/kenney_rpg/skin.json
+```
+
+It also updates `styles/index.json`, so the skin appears in UI Forge. License files from the source packs are copied under the generated style's `licenses/` folder.
 
 ## Step 2: Describe The Style
 
@@ -336,6 +381,8 @@ python tools/mygame_tools/ui_pipeline.py kit-plan --style megami_magazine
 python tools/mygame_tools/ui_pipeline.py prompt-pack --style megami_magazine
 python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade --legacy-slots
 python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
+python tools/mygame_tools/ui_asset_importer.py list
+python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --download --overwrite
 python tools/mygame_tools/ui_ai_provider.py check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images dry-run --style megami_magazine --slot button_primary
