@@ -1,74 +1,41 @@
 # Repository Layout
 
-This repository is organized as one Godot project plus reusable framework packages. Do not create one Godot project per genre unless platform settings or export requirements diverge sharply.
+This repository is a monorepo for clients, servers, shared C++ gameplay logic, protocol schemas, authored data, tooling, and release config.
+
+The goal is to keep client, server, protocol, data, and shared gameplay versions aligned in one commit.
 
 ## Current Snapshot
 
 ```text
 NimdaGame/
-  README.md
-  game/
-    project.godot
-    app/
-      scenes/main.tscn
-      scripts/main.gd
-    common/
-      autoload/
+  clients/
+    godot/
+      project.godot
+      app/
+      common/
+      shared_assets/
+      genres/
       plugins/
-        plugin_registry.gd
-        external_script_plugin.gd
-      ui/
-      input/
-      audio/
-      debug/
-      resources/
-    shared_assets/
-      ui/
-      icons/
-      audio/
-      fonts/
-    genres/
-      turn_rpg/
-      survivor_arpg/
-      tactics/
-      tower_defense/
-      idle/
-    plugins/
-      enabled_plugins.json
-    addons/
-      core_bridge/
-        README.md
-        core_bridge.gdextension.example
-        bin/
-    data/generated/
+      addons/
+      data/generated/
+    native/
+    web/
+  servers/
+    README.md
   core/
-    CMakeLists.txt
     common/
-      include/
-      src/
     modules/
-      battle/
-        include/
-        src/
     genres/
-      turn_rpg/
-      survivor_arpg/
-      tactics/
-      tower_defense/
-      idle/
+  protocol/
+    schemas/
+    generated/
+    docs/
   bindings/
-    godot_cpp/
   data/
     common/
     genres/
-      turn_rpg/
-      survivor_arpg/
-      tactics/
-      tower_defense/
-      idle/
     schemas/
   tools/
-    mygame_tools/
   docs/
   release/
   scripts/
@@ -76,44 +43,35 @@ NimdaGame/
   third_party/
 ```
 
-## Godot Project
+## Clients
 
 ```text
-game/
-  app/
-    scenes/              Boot scenes and global app flow
-    scripts/
-  common/
-    autoload/            Shared autoload services
-    plugins/             Plugin registry and adapters
-    ui/                  Shared UI base controls and helpers
-    input/               Input mapping and command adapters
-    audio/               Shared audio helpers
-    debug/               Debug panels and diagnostics
-    resources/           Shared Godot resources
-  shared_assets/
-    ui/
-    icons/
-    audio/
-    fonts/
-  genres/
-    turn_rpg/
-    survivor_arpg/
-    tactics/
-    tower_defense/
-    idle/
-  plugins/
-  addons/
-  data/generated/
+clients/
+  godot/      Current Godot client project.
+  native/     Reserved for a future native C++ client.
+  web/        Reserved for a future web client.
 ```
 
-`game/common/` is for code that multiple genres can use without importing a specific genre package.
+Clients own presentation, input, audio, UI, local prediction, platform integrations, and client-only tooling.
 
-`game/shared_assets/` is for production assets that multiple genres can use. Generated experiments and temporary imports should not live here until they are accepted as shared resources.
+The Godot client uses its own project root:
 
-`game/genres/<genre>/` owns genre-specific scenes, scripts, data adapters, plugins, and assets.
+```text
+clients/godot/project.godot
+clients/godot/app/scenes/main.tscn
+```
 
-## C++ Core
+Godot `res://` paths are relative to `clients/godot/`, not the repository root.
+
+## Servers
+
+`servers/` is intentionally left as a placeholder. The final server layout will be chosen after evaluating existing server frameworks and migration options.
+
+The preferred implementation direction remains C++ services plus an embedded scripting layer. Lua is the default recommendation for runtime scripting. Python remains a development-time tooling language.
+
+Do not add fixed service boundaries such as gateway, matchmaker, admin API, or game server until the server framework decision is made.
+
+## Shared C++ Core
 
 ```text
 core/
@@ -127,7 +85,20 @@ core/
     idle/
 ```
 
-Reusable gameplay primitives should go under `core/modules/`. Genre orchestration and rule sequencing should go under `core/genres/<genre>/`.
+Reusable gameplay primitives should go under `core/modules/`. Genre orchestration and rule sequencing that must be shared across clients and servers should go under `core/genres/<genre>/`.
+
+`core/` must not depend on Godot or server transport frameworks.
+
+## Protocol
+
+```text
+protocol/
+  schemas/      Source protocol schemas.
+  generated/    Generated protocol bindings.
+  docs/         Compatibility policy and protocol notes.
+```
+
+Protocol ownership stays outside individual clients and servers so all implementations share one message version.
 
 ## Data
 
@@ -145,6 +116,14 @@ data/
 
 Shared data should be small and intentional. If a config carries genre assumptions, keep it under that genre.
 
+Generated runtime data for the Godot client lives under:
+
+```text
+clients/godot/data/generated/
+```
+
+Future clients and servers may have their own generated output directories.
+
 ## Tools
 
 ```text
@@ -158,12 +137,23 @@ tools/
     release_pipeline.py
 ```
 
-Tools should read source data from `data/` and write runtime output to `game/data/generated/`.
+Tools should read source data from `data/`, protocol definitions from `protocol/`, shared gameplay code from `core/`, and write generated output to the owning package.
+
+## Release And Deploy
+
+```text
+release/       Release target config and release notes templates.
+dist/          Local build, package, and release output.
+```
+
+`release_pipeline.py` currently targets the Godot client. Server build and deployment automation should be added separately once the server runtime stack is finalized.
 
 ## Migration Rule
 
 When adding a new feature, choose the narrowest owner:
 
-1. Put it under a genre package if only one genre needs it.
-2. Move it to `game/common/`, `core/modules/`, or `data/common/` only after a second genre needs it or the abstraction is already clear.
-3. Put assets in `game/shared_assets/` only after they are accepted as reusable, not while they are still generated experiments.
+1. Put client-specific behavior under the owning client package.
+2. Put server-specific behavior under `servers/`.
+3. Put deterministic gameplay logic shared by client and server under `core/`.
+4. Put wire contracts under `protocol/`.
+5. Move authored config to `data/common/` only after more than one package needs it.

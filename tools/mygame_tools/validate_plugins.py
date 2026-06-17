@@ -10,7 +10,8 @@ from typing import Any
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-ENABLED_PLUGINS_PATH = REPO_ROOT / "game" / "plugins" / "enabled_plugins.json"
+GODOT_CLIENT_ROOT = REPO_ROOT / "clients" / "godot"
+ENABLED_PLUGINS_PATH = GODOT_CLIENT_ROOT / "plugins" / "enabled_plugins.json"
 SUPPORTED_IMPLEMENTATIONS = {"gdscript", "native", "external_script"}
 
 
@@ -159,7 +160,7 @@ def _read_json(path: Path, errors: list[str]) -> Any:
 
 def resolve_resource_path(path: str) -> Path:
     if path.startswith("res://"):
-        return REPO_ROOT / "game" / path.removeprefix("res://")
+        return GODOT_CLIENT_ROOT / path.removeprefix("res://")
     return resolve_path(Path(path))
 
 

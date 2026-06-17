@@ -10,8 +10,8 @@ dist/
 out/
 bin/
 obj/
-!game/addons/core_bridge/bin/
-!game/addons/core_bridge/bin/.gitkeep
+!clients/godot/addons/core_bridge/bin/
+!clients/godot/addons/core_bridge/bin/.gitkeep
 
 # CMake
 CMakeCache.txt
@@ -39,6 +39,6 @@ venv/
 Thumbs.db
 Desktop.ini
 
-# Generated runtime data is produced from data/raw.
-game/data/generated/*
-!game/data/generated/.gitkeep
+# Generated runtime data is produced from data/.
+clients/godot/data/generated/*
+!clients/godot/data/generated/.gitkeep

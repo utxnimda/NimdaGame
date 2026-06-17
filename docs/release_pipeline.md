@@ -29,15 +29,15 @@ scripts/release.ps1 -Command check
 
 Create export presets in the Godot editor:
 
-1. Open `game/project.godot`.
+1. Open `clients/godot/project.godot`.
 2. Open `Project > Export`.
 3. Add presets matching `release/release_targets.json`:
    - `Windows Desktop`
    - `Linux/X11`
    - `Web`
-4. Save the project so Godot writes `game/export_presets.cfg`.
+4. Save the project so Godot writes `clients/godot/export_presets.cfg`.
 
-`game/export_presets.cfg` is ignored by default because future mobile presets may contain credentials. Commit a sanitized version only after reviewing it.
+`clients/godot/export_presets.cfg` is ignored by default because future mobile presets may contain credentials. Commit a sanitized version only after reviewing it.
 
 Set the Godot executable if it is not on `PATH`:
 
@@ -62,7 +62,7 @@ python tools/mygame_tools/release_pipeline.py package windows --version 0.1.0
 python tools/mygame_tools/release_pipeline.py package --version 0.1.0
 ```
 
-Packages are written under `dist/packages/`.
+Godot client packages are written under `dist/clients/godot/packages/`.
 
 ## Release Notes
 

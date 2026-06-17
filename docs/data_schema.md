@@ -5,13 +5,13 @@
 Source data is authored as YAML. Runtime data is generated as JSON.
 
 ```text
-data/common/**/*.yaml             Shared source data
-data/genres/<genre>/**/*.yaml     Genre-specific source data
-data/schemas/*.schema.json        Validation schemas
-game/data/generated/*.json        Runtime data consumed by Godot
+data/common/**/*.yaml                  Shared source data
+data/genres/<genre>/**/*.yaml          Genre-specific source data
+data/schemas/*.schema.json             Validation schemas
+clients/godot/data/generated/*.json    Runtime data consumed by the Godot client
 ```
 
-The C++ core and Godot runtime should not parse YAML directly.
+The C++ core, clients, and servers should not parse YAML directly.
 
 ## YAML Rules
 

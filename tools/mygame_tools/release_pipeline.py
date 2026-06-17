@@ -156,7 +156,7 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
     export_presets = config.godot_project_dir / "export_presets.cfg"
     if not export_presets.exists():
         warnings.append(
-            "Missing game/export_presets.cfg. Create Godot export presets before running export."
+            f"Missing {relative(export_presets)}. Create Godot export presets before running export."
         )
 
     godot_bin = find_godot(None)
@@ -186,7 +186,10 @@ def cmd_export(args: argparse.Namespace, config: ReleaseConfig) -> int:
 
     export_presets = config.godot_project_dir / "export_presets.cfg"
     if not export_presets.exists():
-        print("ERROR: game/export_presets.cfg is missing. Create export presets in Godot first.", file=sys.stderr)
+        print(
+            f"ERROR: {relative(export_presets)} is missing. Create export presets in Godot first.",
+            file=sys.stderr,
+        )
         return 1
 
     for target in select_targets(config, args.targets):

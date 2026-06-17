@@ -11,18 +11,18 @@ NimdaGame is a reusable framework for several lightweight game genres:
 - Tower defense
 - Incremental or idle game
 
-The main engineering goal is to keep gameplay logic portable and testable while still using Godot for fast iteration on presentation, tooling, and game flow.
+The main engineering goal is to keep gameplay logic portable and testable while allowing multiple clients and C++ server services to share the same deterministic core.
 
 ## Layer Boundaries
 
-### Godot Layer
+### Client Layer
 
-Godot owns presentation and editor workflow:
+Clients own presentation and platform workflow. The current Godot client lives under `clients/godot/`.
 
-- App boot and global flow under `game/app/`
-- Shared runtime helpers under `game/common/`
-- Per-genre scenes and scripts under `game/genres/<genre>/`
-- Shared assets under `game/shared_assets/`
+- App boot and global flow under `clients/godot/app/`
+- Shared Godot runtime helpers under `clients/godot/common/`
+- Per-genre Godot scenes and scripts under `clients/godot/genres/<genre>/`
+- Shared Godot assets under `clients/godot/shared_assets/`
 - Input
 - Animation, VFX, SFX, and music
 - Camera behavior
@@ -30,7 +30,22 @@ Godot owns presentation and editor workflow:
 - Loading generated runtime config
 - Calling the C++ core through adapters
 
-Godot scripts should avoid owning final gameplay rules. They may orchestrate flow, display state, and translate user intent into core requests.
+Client scripts should avoid owning final gameplay rules. They may orchestrate flow, display state, run prediction, and translate user intent into core requests.
+
+### Server Layer
+
+Servers live under `servers/` and are intended to use C++ plus an embedded script layer.
+
+They own:
+
+- Network entry points
+- Authoritative rooms and sessions
+- Tick/update scheduling
+- State synchronization
+- Persistence and service integration
+- Server-only script orchestration
+
+Server code should call shared deterministic logic from `core/` instead of duplicating gameplay rules.
 
 ### C++ Core Layer
 
@@ -50,6 +65,12 @@ It owns:
 
 Shared infrastructure belongs in `core/common/`. Reusable gameplay systems belong in `core/modules/`. Per-genre orchestration belongs in `core/genres/<genre>/`.
 
+### Protocol Layer
+
+`protocol/` owns client/server message schemas and generated bindings.
+
+Protocol definitions should not live inside a single client or server implementation. This keeps all packages aligned on one message version.
+
 ### Binding Layer
 
 `bindings/godot_cpp/` is the only layer that may depend on both Godot and the C++ core.
@@ -63,7 +84,7 @@ The binding layer should stay thin. It should not contain gameplay rules.
 
 ### Plugin Layer
 
-Runtime plugins live under `game/plugins/` and are loaded by the Godot autoload `PluginRegistry`.
+Godot runtime plugins live under `clients/godot/plugins/` and are loaded by the Godot autoload `PluginRegistry`.
 
 Plugins can be implemented as:
 
@@ -101,11 +122,11 @@ Python should not be embedded in the shipped Godot client as a gameplay runtime.
 data/common/*.yaml
 data/genres/<genre>/*.yaml
   -> tools validate schemas and references
-  -> tools generate game/data/generated/*.json
-  -> Godot loads generated JSON
-  -> Godot adapter passes data to C++ core
+  -> tools generate package-owned runtime data
+  -> clients and servers load generated data
+  -> adapters pass data to C++ core
   -> C++ core returns deterministic results
-  -> Godot presents result through game/genres/<genre> scenes
+  -> clients present results and servers synchronize authoritative state
 ```
 
 ## Determinism
@@ -127,4 +148,4 @@ The next milestone should implement one vertical slice inside a genre package:
 2. Python validation and JSON generation.
 3. A C++ gameplay function that resolves one deterministic action.
 4. A GDExtension bridge exposing that function to Godot.
-5. A Godot scene under `game/genres/<genre>/scenes/` displaying before and after state.
+5. A Godot scene under `clients/godot/genres/<genre>/scenes/` displaying before and after state.

@@ -28,10 +28,16 @@ The Godot autoload is:
 PluginRegistry="*res://common/plugins/plugin_registry.gd"
 ```
 
+`res://` paths in plugin manifests are relative to the Godot client root:
+
+```text
+clients/godot/
+```
+
 Enabled plugins are listed in:
 
 ```text
-game/plugins/enabled_plugins.json
+clients/godot/plugins/enabled_plugins.json
 ```
 
 The file may contain an empty list while no runtime plugins are active:

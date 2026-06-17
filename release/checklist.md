@@ -4,9 +4,9 @@
 
 - `main` is clean.
 - YAML source data validates.
-- Godot opens `game/project.godot`.
-- The framework shell opens at `game/app/scenes/main.tscn`.
-- Export presets exist in `game/export_presets.cfg`.
+- Godot opens `clients/godot/project.godot`.
+- The framework shell opens at `clients/godot/app/scenes/main.tscn`.
+- Export presets exist in `clients/godot/export_presets.cfg`.
 - Version number is chosen.
 
 ## Build

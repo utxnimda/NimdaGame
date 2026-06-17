@@ -2,7 +2,7 @@
 
 言語：[English](README.md) | [简体中文](README.zh-CN.md) | 日本語
 
-NimdaGame は、軽量な RPG 系プロジェクト向けの再利用可能な Godot ベースのゲームフレームワークです。
+NimdaGame は、軽量な RPG 系プロジェクト向けの再利用可能なゲームフレームワークです。現在のクライアントは Godot ベースですが、将来のクライアントが Godot に限定されないように構成されています。
 
 - ターン制 RPG
 - シンプルなリアルタイム RPG とサバイバー系アクションゲーム
@@ -10,27 +10,30 @@ NimdaGame は、軽量な RPG 系プロジェクト向けの再利用可能な G
 - タワーディフェンスゲーム
 - インクリメンタルゲームまたは放置ゲーム
 
-このリポジトリは、単一のゲームではなく再利用を前提に構成されています。共有ランタイムコード、共有アセット、データツール、ビルドツールは安定したパスに配置します。各ゲームジャンルは、それぞれ独立したパッケージディレクトリを持ちます。
+このリポジトリは、単一のゲームではなく monorepo と再利用を前提に構成されています。共有 C++ ゲームプレイコード、クライアント、サーバー、プロトコル schema、データツール、ビルドツールは安定したパスに配置します。各ゲームジャンルは、それぞれ独立したパッケージディレクトリを持ちます。
 
 ディレクトリ規約は [docs/repository_layout.md](docs/repository_layout.md) を参照してください。
 レイヤー境界は [docs/architecture.md](docs/architecture.md) を参照してください。
+長期的なクライアント/サーバー構成は [docs/client_server_architecture.md](docs/client_server_architecture.md) を参照してください。
 ランタイムプラグイン仕様は [docs/plugin_system.md](docs/plugin_system.md) を参照してください。
 
 ## レイヤーモデル
 
-- Godot はアプリフロー、シーン、UI 表示、入力、アニメーション、オーディオ、デバッグパネル、エディタ向けワークフローを担当します。
-- 純粋な C++ core は、戦闘ルール、ユニット、スキル、バフ、グリッド、経済、乱数、セーブなどの決定論的なゲームプレイシミュレーションを担当します。
+- クライアントは表示、入力、オーディオ、UI、ローカル予測、プラットフォーム統合を担当します。現在のクライアントは `clients/godot/` にあります。
+- 純粋な C++ core は、戦闘ルール、ユニット、スキル、バフ、グリッド、経済、乱数、セーブなどの決定論的なゲームプレイシミュレーションを担当します。これはクライアント、サーバー、テスト、ツールで共有されます。
+- サーバーは `servers/` に配置し、長期的には C++ サービスと組み込みスクリプト層で構成します。
+- プロトコル schema は `protocol/` に配置し、クライアントとサーバーが同じメッセージバージョンを共有できるようにします。
 - Python ツールは、ソースデータの検証、ランタイム JSON の生成、オフラインシミュレーションやバランスレポートを担当します。
 - ランタイムプラグインは GDScript、C++ GDExtension クラス、または外部スクリプトで実装でき、統一された hook 契約で接続します。
 
 ## リポジトリ構成
 
 ```text
-game/app/            Godot の起動シーンとグローバルなアプリフロー
-game/common/         複数ジャンルで共有する Godot ランタイムコード
-game/shared_assets/  共有アート、オーディオ、フォント、アイコンなどの再利用可能アセット
-game/genres/         ジャンルごとの Godot パッケージ
-game/plugins/        ランタイムプラグインの manifest と実装
+clients/godot/       現在の Godot クライアントプロジェクト
+clients/native/      将来のネイティブクライアント用予約領域
+clients/web/         将来の Web クライアント用予約領域
+servers/             サーバー側 C++ サービスとスクリプト
+protocol/            クライアント/サーバー schema と生成コード
 core/common/         共有 C++ ゲームプレイ基盤
 core/modules/        再利用可能なゲームプレイモジュール
 core/genres/         ジャンルごとの C++ ゲームプレイ編成
@@ -48,7 +51,7 @@ release/             リリースターゲット設定、チェックリスト�
 Godot プロジェクトは次のシーンから開始します。
 
 ```text
-game/app/scenes/main.tscn
+clients/godot/app/scenes/main.tscn
 ```
 
 このシーンは軽量なフレームワーク shell です。ゲームプレイ demo と UI 生成実験は削除済みで、現在のリポジトリはまず再利用可能な構造を固める段階です。
@@ -57,9 +60,9 @@ game/app/scenes/main.tscn
 
 1. 共有データは `data/common/` に、ジャンル固有データは `data/genres/<genre>/` に記述します。
 2. `tools/` 配下の Python ツールで検証し、ランタイム JSON を生成します。
-3. Godot は `game/data/generated/` から生成済み JSON を読み込みます。
+3. Godot は `clients/godot/data/generated/` から生成済み JSON を読み込みます。
 4. Godot バインディング層を通して C++ ゲームプレイシミュレーションを呼び出します。
-5. `game/genres/<genre>/` 配下の Godot シーンで結果を表示します。
+5. `clients/godot/genres/<genre>/` 配下の Godot シーンで結果を表示します。
 
 ## リリースパイプライン
 
