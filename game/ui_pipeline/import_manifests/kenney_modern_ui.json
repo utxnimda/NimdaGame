@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "id": "kenney_modern_ui",
+  "label": "Kenney Modern UI",
+  "description": "CC0 compact modern UI skin and asset library assembled from Kenney UI Pack.",
+  "archives": [
+    {
+      "id": "ui_pack",
+      "label": "Kenney UI Pack",
+      "url": "https://kenney.nl/media/pages/assets/ui-pack/f651646eab-1718203990/kenney_ui-pack.zip",
+      "license": "CC0-1.0"
+    }
+  ],
+  "style": {
+    "id": "kenney_modern_ui",
+    "label": "Kenney Modern UI",
+    "reference_mode": "external_asset_pack",
+    "style_prompt": "compact modern game UI using Kenney CC0 assets, clean blue controls, slider bars, square icon frames, no baked text",
+    "negative_prompt": "photorealism, noisy grunge, unreadable text, characters, logo, watermark",
+    "font_color": "#F4FBFF",
+    "muted_color": "#A9C7DB",
+    "output_contract": {
+      "format": "png",
+      "transparent_background": true,
+      "safe_border_px": 4,
+      "naming": "kenney_modern_{slot_id}.png"
+    }
+  },
+  "components": [
+    {
+      "component": "panel_primary",
+      "state": "normal",
+      "source": "ui_pack/PNG/Blue/Double/button_rectangle_depth_gradient.png",
+      "nine_patch": [36, 18, 36, 18]
+    },
+    {
+      "component": "panel_secondary",
+      "state": "normal",
+      "source": "ui_pack/PNG/Extra/Double/input_rectangle.png",
+      "nine_patch": [18, 14, 18, 14]
+    },
+    {
+      "component": "dialog_box",
+      "state": "normal",
+      "source": "ui_pack/PNG/Blue/Double/button_rectangle_depth_border.png",
+      "nine_patch": [36, 18, 36, 18]
+    },
+    {
+      "component": "button_primary",
+      "state": "normal",
+      "source": "ui_pack/PNG/Blue/Default/button_rectangle_depth_gradient.png",
+      "nine_patch": [18, 10, 18, 10]
+    },
+    {
+      "component": "button_primary",
+      "state": "hover",
+      "source": "ui_pack/PNG/Green/Default/button_rectangle_depth_gradient.png",
+      "nine_patch": [18, 10, 18, 10]
+    },
+    {
+      "component": "button_primary",
+      "state": "pressed",
+      "source": "ui_pack/PNG/Yellow/Default/button_rectangle_depth_gradient.png",
+      "nine_patch": [18, 10, 18, 10]
+    },
+    {
+      "component": "button_primary",
+      "state": "disabled",
+      "source": "ui_pack/PNG/Grey/Default/button_rectangle_depth_gradient.png",
+      "nine_patch": [18, 10, 18, 10]
+    },
+    {
+      "component": "tab_button",
+      "state": "active",
+      "source": "ui_pack/PNG/Blue/Default/button_square_depth_gradient.png",
+      "nine_patch": [10, 10, 10, 10]
+    },
+    {
+      "component": "tab_button",
+      "state": "inactive",
+      "source": "ui_pack/PNG/Grey/Default/button_square_depth_gradient.png",
+      "nine_patch": [10, 10, 10, 10]
+    },
+    {
+      "component": "status_bar",
+      "state": "frame",
+      "source": "ui_pack/PNG/Grey/Default/slide_horizontal_grey.png",
+      "nine_patch": [12, 5, 12, 5]
+    },
+    {
+      "component": "status_bar",
+      "state": "fill",
+      "source": "ui_pack/PNG/Red/Default/slide_horizontal_color.png",
+      "nine_patch": [12, 5, 12, 5]
+    },
+    {
+      "component": "icon_frame",
+      "state": "normal",
+      "source": "ui_pack/PNG/Grey/Default/button_square_depth_line.png",
+      "nine_patch": [10, 10, 10, 10]
+    },
+    {
+      "component": "icon_frame",
+      "state": "selected",
+      "source": "ui_pack/PNG/Blue/Default/button_square_depth_line.png",
+      "nine_patch": [10, 10, 10, 10]
+    },
+    {
+      "component": "portrait_frame",
+      "state": "normal",
+      "source": "ui_pack/PNG/Blue/Double/button_rectangle_border.png",
+      "nine_patch": [24, 14, 24, 14]
+    },
+    {
+      "component": "portrait_frame",
+      "state": "featured",
+      "source": "ui_pack/PNG/Blue/Double/button_rectangle_depth_border.png",
+      "nine_patch": [24, 14, 24, 14]
+    },
+    {
+      "component": "badge",
+      "state": "normal",
+      "source": "ui_pack/PNG/Yellow/Default/star.png",
+      "nine_patch": [12, 12, 12, 12]
+    },
+    {
+      "component": "decor_tape",
+      "state": "normal",
+      "source": "ui_pack/PNG/Extra/Default/divider_edges.png",
+      "nine_patch": [16, 2, 16, 2]
+    },
+    {
+      "component": "divider",
+      "state": "normal",
+      "source": "ui_pack/PNG/Extra/Default/divider.png",
+      "nine_patch": [16, 1, 16, 1]
+    }
+  ],
+  "asset_libraries": [
+    {
+      "id": "ui_pack_png",
+      "label": "UI Pack PNG",
+      "asset_type": "image",
+      "source_root": "ui_pack/PNG",
+      "output_dir": "ui_pack/png",
+      "patterns": ["**/*.png"]
+    },
+    {
+      "id": "ui_pack_sounds",
+      "label": "UI Pack Sounds",
+      "asset_type": "audio",
+      "source_root": "ui_pack/Sounds",
+      "output_dir": "ui_pack/sounds",
+      "patterns": ["**/*.ogg", "**/*.wav", "**/*.mp3"]
+    },
+    {
+      "id": "ui_pack_fonts",
+      "label": "UI Pack Fonts",
+      "asset_type": "font",
+      "source_root": "ui_pack/Font",
+      "output_dir": "ui_pack/fonts",
+      "patterns": ["**/*.ttf", "**/*.otf", "**/*.woff", "**/*.woff2"]
+    }
+  ],
+  "legacy_slots": [
+    {
+      "slot": "panel_primary",
+      "component": "panel_primary",
+      "state": "normal",
+      "color": "#1D78B3",
+      "border": "#0D3D5E"
+    },
+    {
+      "slot": "panel_secondary",
+      "component": "panel_secondary",
+      "state": "normal",
+      "color": "#213747",
+      "border": "#0E1A24"
+    },
+    {
+      "slot": "button_primary",
+      "component": "button_primary",
+      "state": "normal",
+      "color": "#2187C9",
+      "border": "#0B4266"
+    },
+    {
+      "slot": "status_bar",
+      "component": "status_bar",
+      "state": "frame",
+      "color": "#DA3B3B",
+      "border": "#202830"
+    },
+    {
+      "slot": "icon_frame",
+      "component": "icon_frame",
+      "state": "normal",
+      "color": "#596C7B",
+      "border": "#1B2730"
+    }
+  ]
+}

@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 GAME_ROOT = REPO_ROOT / "game"
 STYLE_INDEX_PATH = GAME_ROOT / "ui_pipeline" / "styles" / "index.json"
 TEMPLATE_INDEX_PATH = GAME_ROOT / "ui_pipeline" / "templates" / "index.json"
+ASSET_LIBRARY_INDEX_PATH = GAME_ROOT / "ui_pipeline" / "asset_libraries" / "index.json"
 ASSET_SLOTS_PATH = GAME_ROOT / "ui_pipeline" / "asset_slots.json"
 COMPONENT_CATALOG_PATH = GAME_ROOT / "ui_pipeline" / "component_catalog.json"
 COMPILED_ROOT = GAME_ROOT / "ui_pipeline" / "compiled"
@@ -135,6 +136,7 @@ def validate_ui_pipeline() -> ValidationResult:
 
     styles = load_styles(errors)
     templates = load_templates(errors)
+    asset_libraries = load_asset_libraries(errors)
     asset_slots = load_asset_slots(errors)
     components = load_components(errors)
     slot_ids = {slot.get("id") for slot in asset_slots if isinstance(slot, dict)}
@@ -160,6 +162,14 @@ def validate_ui_pipeline() -> ValidationResult:
         template = read_json(resolve_resource_path(template_path), errors)
         _validate_template(template_id, template, slot_ids, component_ids, errors)
 
+    seen_asset_libraries: set[str] = set()
+    for library_entry in asset_libraries:
+        library_id = _required_string(library_entry, "id", "asset library index entry", errors)
+        _check_duplicate(library_id, seen_asset_libraries, "asset library", errors)
+        library_path = _required_string(library_entry, "library_path", f"asset library {library_id}", errors)
+        library = read_json(resolve_resource_path(library_path), errors)
+        _validate_asset_library(library_id, library, errors)
+
     return ValidationResult(tuple(errors), tuple(warnings))
 
 
@@ -169,6 +179,12 @@ def load_styles(errors: list[str] | None = None) -> list[dict[str, Any]]:
 
 def load_templates(errors: list[str] | None = None) -> list[dict[str, Any]]:
     return _load_index_array(TEMPLATE_INDEX_PATH, "templates", errors)
+
+
+def load_asset_libraries(errors: list[str] | None = None) -> list[dict[str, Any]]:
+    if not ASSET_LIBRARY_INDEX_PATH.exists():
+        return []
+    return _load_index_array(ASSET_LIBRARY_INDEX_PATH, "libraries", errors)
 
 
 def load_asset_slots(errors: list[str] | None = None) -> list[dict[str, Any]]:
@@ -449,6 +465,42 @@ def _validate_skin(
             image_path = state_data.get("image")
             if isinstance(image_path, str) and image_path and not resolve_resource_path(image_path).exists():
                 errors.append(f"Skin {style_id} component image does not exist: {image_path}")
+
+
+def _validate_asset_library(
+    library_id: str,
+    library: dict[str, Any],
+    errors: list[str],
+) -> None:
+    if not library:
+        return
+    if library.get("id") != library_id:
+        errors.append(f"Asset library id mismatch: index {library_id}, file {library.get('id')}")
+    groups = library.get("libraries", [])
+    if not isinstance(groups, list):
+        errors.append(f"Asset library {library_id} field 'libraries' must be an array.")
+        return
+    seen_groups: set[str] = set()
+    for group in groups:
+        if not isinstance(group, dict):
+            errors.append(f"Asset library {library_id} has a non-object group.")
+            continue
+        group_id = _required_string(group, "id", f"asset library {library_id} group", errors)
+        _check_duplicate(group_id, seen_groups, f"asset library {library_id} group", errors)
+        assets = group.get("assets", [])
+        if not isinstance(assets, list):
+            errors.append(f"Asset library {library_id} group {group_id} field 'assets' must be an array.")
+            continue
+        seen_assets: set[str] = set()
+        for asset in assets:
+            if not isinstance(asset, dict):
+                errors.append(f"Asset library {library_id} group {group_id} has a non-object asset.")
+                continue
+            asset_id = _required_string(asset, "id", f"asset library {library_id} group {group_id} asset", errors)
+            _check_duplicate(asset_id, seen_assets, f"asset library {library_id} group {group_id} asset", errors)
+            asset_path = _required_string(asset, "path", f"asset library {library_id} asset {asset_id}", errors)
+            if asset_path and not resolve_resource_path(asset_path).exists():
+                errors.append(f"Asset library {library_id} asset does not exist: {asset_path}")
 
 
 def _validate_template(

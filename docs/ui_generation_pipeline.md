@@ -33,6 +33,8 @@ game/plugins/enabled_plugins.json
 game/ui_pipeline/
   asset_slots.json                  Legacy required UI image slots
   component_catalog.json            Canonical reusable UI components and states
+  asset_libraries/index.json        Imported non-skin asset library registry
+  asset_libraries/*.json            Imported icon, prompt, audio, font, and vector asset indexes
   import_manifests/*.json           External asset pack import recipes
   styles/index.json                 Style registry
   styles/<style_id>/style.json      AI style prompt and output contract
@@ -118,10 +120,15 @@ This is what prevents AI generation from becoming "one picture with changed colo
 
 ## Import External UI Packs
 
-External UI packs can be converted into the same component/state skin format used by AI-generated art. The first built-in manifest targets Kenney's CC0 UI packs:
+External UI packs can be converted into the same component/state skin format used by AI-generated art. Non-skin packs such as icons, input prompts, fonts, and UI audio can also be imported as asset libraries.
+
+Built-in Kenney CC0 manifests:
 
 ```text
+game/ui_pipeline/import_manifests/kenney_modern_ui.json
+game/ui_pipeline/import_manifests/kenney_pixel_ui.json
 game/ui_pipeline/import_manifests/kenney_rpg.json
+game/ui_pipeline/import_manifests/kenney_asset_library.json
 ```
 
 List import manifests:
@@ -134,6 +141,9 @@ Download, extract, import, and register the Kenney RPG skin:
 
 ```powershell
 python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_modern_ui --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_pixel_ui --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_asset_library --download --overwrite
 ```
 
 If the zip files were downloaded manually, extract them into a source root with these folder names:
@@ -153,12 +163,27 @@ python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --source-root C
 The importer writes:
 
 ```text
-game/ui_pipeline/generated/kenney_rpg/external/
-game/ui_pipeline/styles/kenney_rpg/style.json
-game/ui_pipeline/styles/kenney_rpg/skin.json
+game/ui_pipeline/generated/<style_or_library_id>/external/
+game/ui_pipeline/styles/<style_id>/style.json
+game/ui_pipeline/styles/<style_id>/skin.json
+game/ui_pipeline/asset_libraries/<library_id>.json
+game/ui_pipeline/asset_libraries/index.json
 ```
 
-It also updates `styles/index.json`, so the skin appears in UI Forge. License files from the source packs are copied under the generated style's `licenses/` folder.
+Skin manifests update `styles/index.json`, so the skin appears in UI Forge. Asset-only manifests set `register_style` to `false` and update only `asset_libraries/index.json`. License files from the source packs are copied under the generated style or library's `licenses/` folder.
+
+`asset_libraries` in a manifest supports recursive glob imports:
+
+```json
+{
+  "id": "input_prompts_png",
+  "label": "Input Prompts PNG",
+  "asset_type": "image",
+  "source_root": "input_prompts",
+  "output_dir": "input_prompts/png",
+  "patterns": ["**/*.png"]
+}
+```
 
 ## Step 2: Describe The Style
 
@@ -383,6 +408,9 @@ python tools/mygame_tools/ui_pipeline.py prompt-pack --style neon_arcade --legac
 python tools/mygame_tools/ui_pipeline.py compile-kit --style megami_magazine
 python tools/mygame_tools/ui_asset_importer.py list
 python tools/mygame_tools/ui_asset_importer.py import kenney_rpg --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_modern_ui --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_pixel_ui --download --overwrite
+python tools/mygame_tools/ui_asset_importer.py import kenney_asset_library --download --overwrite
 python tools/mygame_tools/ui_ai_provider.py check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images check
 python tools/mygame_tools/ui_ai_provider.py --provider gemini_images dry-run --style megami_magazine --slot button_primary

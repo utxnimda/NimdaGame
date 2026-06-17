@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "kenney_pixel_ui",
+  "label": "Kenney Pixel UI",
+  "reference_mode": "external_asset_pack",
+  "style_prompt": "pixel-art RPG UI using Kenney CC0 assets, crisp 9-slice panels, colorful compact buttons, no baked text",
+  "negative_prompt": "antialias blur, photorealism, unreadable text, characters, logo, watermark",
+  "output_contract": {
+    "format": "png",
+    "transparent_background": true,
+    "safe_border_px": 2,
+    "naming": "kenney_pixel_{slot_id}.png"
+  },
+  "source": {
+    "type": "external_asset_pack",
+    "manifest": "res://ui_pipeline/import_manifests/kenney_pixel_ui.json",
+    "licenses": [
+      "CC0-1.0"
+    ]
+  }
+}

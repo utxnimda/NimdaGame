@@ -32,6 +32,12 @@ except ModuleNotFoundError:
 
 MANIFEST_ROOT = GAME_ROOT / "ui_pipeline" / "import_manifests"
 DEFAULT_SOURCE_ROOT = REPO_ROOT / "dist" / "ui_pipeline" / "external_sources"
+ASSET_LIBRARY_ROOT = GAME_ROOT / "ui_pipeline" / "asset_libraries"
+ASSET_LIBRARY_INDEX_PATH = ASSET_LIBRARY_ROOT / "index.json"
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+AUDIO_SUFFIXES = {".ogg", ".wav", ".mp3"}
+FONT_SUFFIXES = {".ttf", ".otf", ".woff", ".woff2"}
+VECTOR_SUFFIXES = {".svg"}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -68,6 +74,8 @@ def cmd_import(args: argparse.Namespace) -> int:
 
     style = manifest.get("style", {})
     style_id = str(style.get("id", manifest.get("id", manifest_path.stem)))
+    register_style = bool(manifest.get("register_style", bool(manifest.get("components"))))
+    writes_skin = bool(manifest.get("components") or register_style)
     source_root = resolve_source_root(args.source_root, style_id)
 
     if args.download:
@@ -81,11 +89,10 @@ def cmd_import(args: argparse.Namespace) -> int:
 
     style_dir = GAME_ROOT / "ui_pipeline" / "styles" / style_id
     generated_dir = GAME_ROOT / "ui_pipeline" / "generated" / style_id / "external"
-    if style_dir.exists() and not args.overwrite:
+    if writes_skin and style_dir.exists() and not args.overwrite:
         print(f"ERROR: Style already exists. Re-run with --overwrite: {relative(style_dir)}")
         return 1
 
-    style_dir.mkdir(parents=True, exist_ok=True)
     generated_dir.mkdir(parents=True, exist_ok=True)
 
     component_catalog = {
@@ -94,18 +101,35 @@ def cmd_import(args: argparse.Namespace) -> int:
         if isinstance(component, dict) and "id" in component
     }
     copied = copy_component_assets(manifest, source_root, generated_dir, component_catalog)
+    asset_libraries = copy_asset_libraries(manifest, source_root, generated_dir)
     copy_license_files(manifest, source_root, generated_dir)
 
-    style_json = build_style_json(manifest, style_id)
-    skin_json = build_skin_json(manifest, style_id, copied, component_catalog)
-    write_json(style_dir / "style.json", style_json)
-    write_json(style_dir / "skin.json", skin_json)
-    update_style_index(style_id, str(style_json.get("label", style_id)))
+    if asset_libraries:
+        asset_library_json = build_asset_library_json(manifest, style_id, asset_libraries)
+        ASSET_LIBRARY_ROOT.mkdir(parents=True, exist_ok=True)
+        asset_library_path = ASSET_LIBRARY_ROOT / f"{style_id}.json"
+        write_json(asset_library_path, asset_library_json)
+        update_asset_library_index(style_id, str(asset_library_json.get("label", style_id)), asset_library_path)
+
+    if writes_skin:
+        style_dir.mkdir(parents=True, exist_ok=True)
+        style_json = build_style_json(manifest, style_id)
+        skin_json = build_skin_json(manifest, style_id, copied, component_catalog, asset_libraries)
+        write_json(style_dir / "style.json", style_json)
+        write_json(style_dir / "skin.json", skin_json)
+        if register_style:
+            update_style_index(style_id, str(style_json.get("label", style_id)))
 
     print(f"Imported {style_id}")
-    print(f"Wrote {relative(style_dir / 'style.json')}")
-    print(f"Wrote {relative(style_dir / 'skin.json')}")
+    if writes_skin:
+        print(f"Wrote {relative(style_dir / 'style.json')}")
+        print(f"Wrote {relative(style_dir / 'skin.json')}")
+    if asset_libraries:
+        print(f"Wrote {relative(ASSET_LIBRARY_ROOT / f'{style_id}.json')}")
     print(f"Copied {len(copied)} assets into {relative(generated_dir)}")
+    if asset_libraries:
+        library_count = sum(len(library.get("assets", [])) for library in asset_libraries)
+        print(f"Indexed {library_count} library assets")
     return 0
 
 
@@ -150,6 +174,14 @@ def validate_sources(manifest: dict[str, Any], source_root: Path) -> list[str]:
         source = source_root / str(asset.get("source", ""))
         if not source.exists():
             errors.append(f"Missing source asset: {source}")
+    for library in manifest.get("asset_libraries", []):
+        library_root = source_root / str(library.get("source_root", ""))
+        if not library_root.exists():
+            errors.append(f"Missing asset library source root: {library_root}")
+            continue
+        matches = list(iter_library_files(library_root, library.get("patterns", ["**/*"])))
+        if not matches:
+            errors.append(f"Asset library has no matching files: {library_root}")
     return errors
 
 
@@ -180,6 +212,73 @@ def copy_component_assets(
     return copied
 
 
+def copy_asset_libraries(
+    manifest: dict[str, Any],
+    source_root: Path,
+    generated_dir: Path,
+) -> list[dict[str, Any]]:
+    copied_libraries: list[dict[str, Any]] = []
+    for library in manifest.get("asset_libraries", []):
+        library_id = str(library.get("id", "library"))
+        library_root = source_root / str(library.get("source_root", ""))
+        output_dir = generated_dir / "library" / str(library.get("output_dir", library_id))
+        assets: list[dict[str, Any]] = []
+        for source_file in iter_library_files(library_root, library.get("patterns", ["**/*"])):
+            relative_source = source_file.relative_to(library_root)
+            output_path = output_dir / relative_source
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_file, output_path)
+            asset_type = infer_asset_type(source_file)
+            asset = {
+                "id": asset_id_for(relative_source),
+                "type": asset_type,
+                "path": resource_path(output_path),
+                "source": str(Path(str(library.get("source_root", ""))) / relative_source).replace("\\", "/"),
+            }
+            if asset_type == "image":
+                asset["image"] = asset["path"]
+            elif asset_type == "audio":
+                asset["audio"] = asset["path"]
+            assets.append(asset)
+        copied_libraries.append(
+            {
+                "id": library_id,
+                "label": library.get("label", library_id),
+                "asset_type": library.get("asset_type", "mixed"),
+                "assets": assets,
+            }
+        )
+    return copied_libraries
+
+
+def iter_library_files(library_root: Path, patterns: Any) -> list[Path]:
+    pattern_values = patterns if isinstance(patterns, list) else [str(patterns)]
+    matches: dict[str, Path] = {}
+    for pattern in pattern_values:
+        for candidate in library_root.glob(str(pattern)):
+            if candidate.is_file():
+                matches[str(candidate.resolve()).lower()] = candidate
+    return [matches[key] for key in sorted(matches)]
+
+
+def infer_asset_type(path: Path) -> str:
+    suffix = path.suffix.lower()
+    if suffix in IMAGE_SUFFIXES:
+        return "image"
+    if suffix in AUDIO_SUFFIXES:
+        return "audio"
+    if suffix in FONT_SUFFIXES:
+        return "font"
+    if suffix in VECTOR_SUFFIXES:
+        return "vector"
+    return "file"
+
+
+def asset_id_for(path: Path) -> str:
+    normalized = str(path).replace("\\", "/").lower()
+    return "".join(character if character.isalnum() else "_" for character in normalized).strip("_")
+
+
 def copy_license_files(manifest: dict[str, Any], source_root: Path, generated_dir: Path) -> None:
     license_dir = generated_dir / "licenses"
     for archive in manifest.get("archives", []):
@@ -190,7 +289,17 @@ def copy_license_files(manifest: dict[str, Any], source_root: Path, generated_di
         for candidate in archive_root.iterdir():
             if candidate.is_file() and candidate.name.lower().startswith("license"):
                 license_dir.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(candidate, license_dir / f"{archive_id}_{candidate.name}")
+                copy_text_license(candidate, license_dir / f"{archive_id}_{candidate.name}")
+
+
+def copy_text_license(source: Path, target: Path) -> None:
+    try:
+        text = source.read_text(encoding="utf-8-sig")
+    except UnicodeDecodeError:
+        shutil.copy2(source, target)
+        return
+    normalized = "\n".join(line.rstrip() for line in text.splitlines()).strip() + "\n"
+    target.write_text(normalized, encoding="utf-8")
 
 
 def build_style_json(manifest: dict[str, Any], style_id: str) -> dict[str, Any]:
@@ -230,6 +339,7 @@ def build_skin_json(
     style_id: str,
     copied: dict[tuple[str, str], dict[str, Any]],
     component_catalog: dict[str, dict[str, Any]],
+    asset_libraries: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     style = manifest.get("style", {})
     components: dict[str, Any] = {}
@@ -260,7 +370,7 @@ def build_skin_json(
             "border": slot.get("border", "#000000"),
         }
 
-    return {
+    skin = {
         "schema_version": 1,
         "id": style_id,
         "label": style.get("label", manifest.get("label", style_id)),
@@ -268,6 +378,34 @@ def build_skin_json(
         "muted_color": style.get("muted_color", "#AAAAAA"),
         "components": components,
         "slots": slots,
+    }
+    if asset_libraries:
+        skin["asset_libraries"] = asset_libraries
+    return skin
+
+
+def build_asset_library_json(
+    manifest: dict[str, Any],
+    style_id: str,
+    asset_libraries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    style = manifest.get("style", {})
+    return {
+        "schema_version": 1,
+        "id": style_id,
+        "label": style.get("label", manifest.get("label", style_id)),
+        "source": {
+            "type": "external_asset_pack",
+            "manifest": f"res://ui_pipeline/import_manifests/{manifest.get('id', style_id)}.json",
+            "licenses": sorted(
+                {
+                    archive.get("license", "")
+                    for archive in manifest.get("archives", [])
+                    if archive.get("license")
+                }
+            ),
+        },
+        "libraries": asset_libraries,
     }
 
 
@@ -287,6 +425,25 @@ def update_style_index(style_id: str, label: str) -> None:
     else:
         styles.append(entry)
     write_json(STYLE_INDEX_PATH, index)
+
+
+def update_asset_library_index(style_id: str, label: str, library_path: Path) -> None:
+    index = read_json(ASSET_LIBRARY_INDEX_PATH)
+    if not index:
+        index = {"schema_version": 1, "libraries": []}
+    libraries = index.setdefault("libraries", [])
+    entry = {
+        "id": style_id,
+        "label": label,
+        "library_path": resource_path(library_path),
+    }
+    for offset, existing in enumerate(libraries):
+        if existing.get("id") == style_id:
+            libraries[offset] = entry
+            break
+    else:
+        libraries.append(entry)
+    write_json(ASSET_LIBRARY_INDEX_PATH, index)
 
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:

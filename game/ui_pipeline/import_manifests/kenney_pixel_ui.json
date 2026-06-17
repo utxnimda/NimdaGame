@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "id": "kenney_pixel_ui",
+  "label": "Kenney Pixel UI",
+  "description": "CC0 pixel-art UI skin assembled from Kenney Pixel UI Pack.",
+  "archives": [
+    {
+      "id": "pixel_ui",
+      "label": "Kenney Pixel UI Pack",
+      "url": "https://kenney.nl/media/pages/assets/pixel-ui-pack/821e760f21-1677661508/kenney_pixel-ui-pack.zip",
+      "license": "CC0-1.0"
+    }
+  ],
+  "style": {
+    "id": "kenney_pixel_ui",
+    "label": "Kenney Pixel UI",
+    "reference_mode": "external_asset_pack",
+    "style_prompt": "pixel-art RPG UI using Kenney CC0 assets, crisp 9-slice panels, colorful compact buttons, no baked text",
+    "negative_prompt": "antialias blur, photorealism, unreadable text, characters, logo, watermark",
+    "font_color": "#F8F1D8",
+    "muted_color": "#B99F75",
+    "output_contract": {
+      "format": "png",
+      "transparent_background": true,
+      "safe_border_px": 2,
+      "naming": "kenney_pixel_{slot_id}.png"
+    }
+  },
+  "components": [
+    {
+      "component": "panel_primary",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Ancient/brown.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "panel_secondary",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Ancient/tan.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "dialog_box",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Ancient/brown_inlay.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "button_primary",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Colored/blue.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "button_primary",
+      "state": "hover",
+      "source": "pixel_ui/9-Slice/Colored/green.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "button_primary",
+      "state": "pressed",
+      "source": "pixel_ui/9-Slice/Colored/blue_pressed.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "button_primary",
+      "state": "disabled",
+      "source": "pixel_ui/9-Slice/Colored/grey.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "tab_button",
+      "state": "active",
+      "source": "pixel_ui/9-Slice/Outline/yellow.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "tab_button",
+      "state": "inactive",
+      "source": "pixel_ui/9-Slice/Outline/blue.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "status_bar",
+      "state": "frame",
+      "source": "pixel_ui/9-Slice/space_inlay.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "status_bar",
+      "state": "fill",
+      "source": "pixel_ui/9-Slice/Colored/red.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "icon_frame",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Ancient/grey.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "icon_frame",
+      "state": "selected",
+      "source": "pixel_ui/9-Slice/Outline/yellow.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "portrait_frame",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Ancient/grey_inlay.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "portrait_frame",
+      "state": "featured",
+      "source": "pixel_ui/9-Slice/Ancient/white_inlay.png",
+      "nine_patch": [8, 8, 8, 8]
+    },
+    {
+      "component": "badge",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Colored/yellow.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "decor_tape",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/Outline/blue.png",
+      "nine_patch": [6, 6, 6, 6]
+    },
+    {
+      "component": "divider",
+      "state": "normal",
+      "source": "pixel_ui/9-Slice/list.png",
+      "nine_patch": [8, 2, 8, 2]
+    }
+  ],
+  "asset_libraries": [
+    {
+      "id": "pixel_ui_png",
+      "label": "Pixel UI PNG",
+      "asset_type": "image",
+      "source_root": "pixel_ui",
+      "output_dir": "pixel_ui",
+      "patterns": ["**/*.png"]
+    }
+  ],
+  "legacy_slots": [
+    {
+      "slot": "panel_primary",
+      "component": "panel_primary",
+      "state": "normal",
+      "color": "#7D563A",
+      "border": "#2A1B15"
+    },
+    {
+      "slot": "panel_secondary",
+      "component": "panel_secondary",
+      "state": "normal",
+      "color": "#B88D55",
+      "border": "#4A3020"
+    },
+    {
+      "slot": "button_primary",
+      "component": "button_primary",
+      "state": "normal",
+      "color": "#2C78C4",
+      "border": "#133D68"
+    },
+    {
+      "slot": "status_bar",
+      "component": "status_bar",
+      "state": "frame",
+      "color": "#C64237",
+      "border": "#2A1B15"
+    },
+    {
+      "slot": "icon_frame",
+      "component": "icon_frame",
+      "state": "normal",
+      "color": "#777777",
+      "border": "#2A2A2A"
+    }
+  ]
+}
