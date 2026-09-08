@@ -107,11 +107,12 @@ Validation should catch:
 
 ## Versioning
 
-Generated data should eventually include:
+Generated RPG editor data currently includes:
 
 - `schema_version`
-- `content_version`
-- `generated_at`
+- `content_type`
 - `source_hash`
 
-The first version can omit this until the generator exists.
+`content_version` and release metadata will be added when multiple content packages are assembled into one product build.
+
+The editor writes a temporary JSON transaction, validates it, atomically replaces the authored YAML, and regenerates runtime JSON. Generated files remain build outputs and are not edited by hand.

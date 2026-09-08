@@ -75,6 +75,17 @@ python tools/mygame_tools/release_pipeline.py notes --version 0.1.0
 
 実際のエクスポートには、ローカルの Godot export presets が必要です。詳細は [docs/release_pipeline.md](docs/release_pipeline.md) を参照してください。
 
+## RPG エディター
+
+Godot クライアントでは `Nimda RPG Editor` プラグインが有効になっています。最初の段階では、YAML ソースデータ、JSON Schema 検証、生成済みランタイム JSON を使う RPG Maker 形式のアクターデータベースを提供します。
+
+```powershell
+python -m pip install -e "tools[dev]"
+godot --editor --path clients/godot
+```
+
+エディターのワークフローとロードマップは [docs/rpg_editor.md](docs/rpg_editor.md) を参照してください。
+
 ## 現在の状態
 
-このリポジトリには、再利用可能なプロジェクト構造、プラグインレジストリ、データツールのスタブ、C++ core scaffold、Godot GDExtension scaffold、リリースツールが含まれています。次の実装マイルストーンでは、汎用 demo ディレクトリではなく、いずれかのジャンルパッケージ内に 1 本の垂直スライスを追加するべきです。
+現在のリポジトリには、再利用可能なプロジェクト構造、ランタイムプラグインレジストリ、最初の RPG エディターデータベース、動作するデータ検証と生成、C++ core scaffold、Godot GDExtension scaffold、リリースツールが含まれています。次のエディターマイルストーンは、職業とスキルのデータベース、および型付き相互参照フィールドです。

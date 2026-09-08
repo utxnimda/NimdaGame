@@ -1,12 +1,19 @@
-"""Validate source configuration files.
+"""Validate source configuration files."""
 
-Implementation will be added in the first data-tooling milestone.
-"""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+# Support both installed commands and direct script invocation.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from mygame_tools.rpg_editor_data import main as rpg_data_main
 
 
 def main() -> int:
-    print("validate_config: not implemented yet")
-    return 0
+    return rpg_data_main(["validate", "--database", "all"])
 
 
 if __name__ == "__main__":

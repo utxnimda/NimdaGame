@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+# Support both installed commands and direct script invocation.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-GODOT_CLIENT_ROOT = REPO_ROOT / "clients" / "godot"
+from mygame_tools.paths import GODOT_CLIENT_ROOT, relative, resolve_path, resolve_resource_path
+
 ENABLED_PLUGINS_PATH = GODOT_CLIENT_ROOT / "plugins" / "enabled_plugins.json"
 SUPPORTED_IMPLEMENTATIONS = {"gdscript", "native", "external_script"}
 
@@ -45,7 +49,9 @@ def validate_plugin_layout(enabled_path: Path = ENABLED_PLUGINS_PATH) -> PluginV
 
     enabled = _read_json(resolve_path(enabled_path), errors)
     if not isinstance(enabled, dict):
-        errors.append(f"Enabled plugin file must contain an object: {relative(resolve_path(enabled_path))}")
+        errors.append(
+            f"Enabled plugin file must contain an object: {relative(resolve_path(enabled_path))}"
+        )
         return PluginValidationResult(tuple(errors), tuple(warnings))
 
     plugin_paths = enabled.get("plugins", [])
@@ -116,7 +122,9 @@ def _validate_manifest(
             errors.append(f"External script plugin {plugin_id} missing implementation.command.")
         runtime = implementation.get("runtime", "editor_only")
         if runtime == "runtime":
-            warnings.append(f"External script plugin {plugin_id} is marked runtime; verify export target support.")
+            warnings.append(
+                f"External script plugin {plugin_id} is marked runtime; verify export target support."
+            )
 
     hooks = manifest.get("hooks")
     if not isinstance(hooks, dict):
@@ -131,7 +139,9 @@ def _validate_manifest(
             continue
         priority = hook_config.get("priority", 100)
         if not isinstance(priority, int) or priority < 0:
-            errors.append(f"Plugin {plugin_id} hook {hook_id} priority must be a non-negative integer.")
+            errors.append(
+                f"Plugin {plugin_id} hook {hook_id} priority must be a non-negative integer."
+            )
 
 
 def _required_string(
@@ -156,25 +166,6 @@ def _read_json(path: Path, errors: list[str]) -> Any:
     except json.JSONDecodeError as exc:
         errors.append(f"Invalid JSON in {relative(path)}: {exc}")
         return None
-
-
-def resolve_resource_path(path: str) -> Path:
-    if path.startswith("res://"):
-        return GODOT_CLIENT_ROOT / path.removeprefix("res://")
-    return resolve_path(Path(path))
-
-
-def resolve_path(path: Path) -> Path:
-    if path.is_absolute():
-        return path
-    return REPO_ROOT / path
-
-
-def relative(path: Path) -> str:
-    try:
-        return str(path.relative_to(REPO_ROOT))
-    except ValueError:
-        return str(path)
 
 
 if __name__ == "__main__":

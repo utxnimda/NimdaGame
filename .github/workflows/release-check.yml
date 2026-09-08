@@ -1,12 +1,15 @@
-name: Release Check
+name: Project Checks
 
 on:
   push:
   pull_request:
 
 jobs:
-  release-check:
-    runs-on: ubuntu-latest
+  checks:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout
@@ -17,8 +20,24 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Print release plan
-        run: python tools/mygame_tools/release_pipeline.py plan
+      - name: Install development tools
+        run: python -m pip install -e "tools[dev]"
+
+      - name: Check Python style
+        run: |
+          python -m ruff check tools
+          python -m ruff format --check tools
+
+      - name: Test database services
+        run: python -m pytest tools/tests -q
+
+      - name: Generate validated runtime data
+        run: python tools/mygame_tools/generate_godot_data.py
+
+      - name: Build portable gameplay core
+        run: |
+          cmake -S core -B build/core
+          cmake --build build/core --config Release
 
       - name: Check release layout
         run: python tools/mygame_tools/release_pipeline.py check

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nimdagame.local/schemas/actor_database.schema.json",
+  "title": "Turn RPG Actor Database",
+  "type": "object",
+  "required": ["schema_version", "actors"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "actors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/actor"
+      }
+    }
+  },
+  "$defs": {
+    "actor": {
+      "type": "object",
+      "required": [
+        "id",
+        "legacy_id",
+        "name",
+        "nickname",
+        "profile",
+        "class_id",
+        "initial_level",
+        "max_level",
+        "assets",
+        "base_stats"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^actor_[a-z0-9_]+$"
+        },
+        "legacy_id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "profile": {
+          "type": "string"
+        },
+        "class_id": {
+          "type": "string",
+          "pattern": "^class_[a-z0-9_]+$"
+        },
+        "initial_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "max_level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "assets": {
+          "type": "object",
+          "required": ["portrait", "map_sprite", "battle_sprite"],
+          "additionalProperties": false,
+          "properties": {
+            "portrait": {
+              "type": "string"
+            },
+            "map_sprite": {
+              "type": "string"
+            },
+            "battle_sprite": {
+              "type": "string"
+            }
+          }
+        },
+        "base_stats": {
+          "type": "object",
+          "required": [
+            "max_hp",
+            "max_mp",
+            "attack",
+            "defense",
+            "magic_attack",
+            "magic_defense",
+            "agility",
+            "luck"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "max_hp": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_mp": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attack": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "defense": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "magic_attack": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "magic_defense": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "agility": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "luck": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,17 +9,17 @@ import shutil
 import subprocess
 import sys
 import zipfile
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
-try:
-    from mygame_tools.validate_plugins import validate_plugin_layout
-except ModuleNotFoundError:
-    from validate_plugins import validate_plugin_layout
+# Support both installed commands and direct script invocation.
+if __package__ in (None, ""):
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from mygame_tools.paths import REPO_ROOT, relative, resolve_path
+from mygame_tools.validate_plugins import validate_plugin_layout
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONFIG_PATH = REPO_ROOT / "release" / "release_targets.json"
 DEFAULT_VERSION = "0.1.0"
 
@@ -62,7 +62,9 @@ def _build_parser() -> argparse.ArgumentParser:
     plan.set_defaults(func=cmd_plan)
 
     check = subparsers.add_parser("check", help="Check repository and release prerequisites.")
-    check.add_argument("--strict", action="store_true", help="Fail if Godot export prerequisites are missing.")
+    check.add_argument(
+        "--strict", action="store_true", help="Fail if Godot export prerequisites are missing."
+    )
     check.set_defaults(func=cmd_check)
 
     export = subparsers.add_parser("export", help="Export one or more Godot targets.")
@@ -79,7 +81,9 @@ def _build_parser() -> argparse.ArgumentParser:
 
     publish = subparsers.add_parser("publish", help="Create a GitHub release from packages.")
     publish.add_argument("--version", default=DEFAULT_VERSION)
-    publish.add_argument("--execute", action="store_true", help="Run gh release create instead of printing it.")
+    publish.add_argument(
+        "--execute", action="store_true", help="Run gh release create instead of printing it."
+    )
     publish.set_defaults(func=cmd_publish)
 
     all_cmd = subparsers.add_parser("all", help="Export, package, and generate notes.")
@@ -92,7 +96,9 @@ def _build_parser() -> argparse.ArgumentParser:
 def _add_target_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("targets", nargs="*", help="Target IDs. Defaults to all targets.")
     parser.add_argument("--version", default=DEFAULT_VERSION)
-    parser.add_argument("--godot-bin", default=None, help="Path to Godot executable. Overrides GODOT_BIN.")
+    parser.add_argument(
+        "--godot-bin", default=None, help="Path to Godot executable. Overrides GODOT_BIN."
+    )
 
 
 def load_config(path: Path) -> ReleaseConfig:
@@ -118,12 +124,6 @@ def load_config(path: Path) -> ReleaseConfig:
         artifact_root=resolve_path(Path(raw["artifact_root"])),
         targets=tuple(targets),
     )
-
-
-def resolve_path(path: Path) -> Path:
-    if path.is_absolute():
-        return path
-    return REPO_ROOT / path
 
 
 def cmd_plan(_args: argparse.Namespace, config: ReleaseConfig) -> int:
@@ -161,10 +161,14 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
 
     godot_bin = find_godot(None)
     if godot_bin is None:
-        warnings.append("Godot executable not found. Set GODOT_BIN or add Godot to PATH before export.")
+        warnings.append(
+            "Godot executable not found. Set GODOT_BIN or add Godot to PATH before export."
+        )
 
     if not git_is_clean():
-        warnings.append("Git working tree has local changes. Release builds should come from a clean commit.")
+        warnings.append(
+            "Git working tree has local changes. Release builds should come from a clean commit."
+        )
 
     for error in errors:
         print(f"ERROR: {error}", file=sys.stderr)
@@ -181,7 +185,9 @@ def cmd_check(args: argparse.Namespace, config: ReleaseConfig) -> int:
 def cmd_export(args: argparse.Namespace, config: ReleaseConfig) -> int:
     godot_bin = find_godot(args.godot_bin)
     if godot_bin is None:
-        print("ERROR: Godot executable not found. Set GODOT_BIN or pass --godot-bin.", file=sys.stderr)
+        print(
+            "ERROR: Godot executable not found. Set GODOT_BIN or pass --godot-bin.", file=sys.stderr
+        )
         return 1
 
     export_presets = config.godot_project_dir / "export_presets.cfg"
@@ -192,7 +198,18 @@ def cmd_export(args: argparse.Namespace, config: ReleaseConfig) -> int:
         )
         return 1
 
-    for target in select_targets(config, args.targets):
+    targets = select_targets(config, args.targets)
+    try:
+        from mygame_tools.database import generate_database
+        from mygame_tools.databases import DATABASES
+
+        for spec in DATABASES.values():
+            generate_database(spec)
+    except (ModuleNotFoundError, OSError, ValueError) as exc:
+        print(f"ERROR: Runtime data preparation failed: {exc}", file=sys.stderr)
+        return 1
+
+    for target in targets:
         output_path = format_versioned_path(target.export_path, args.version)
         output_path.parent.mkdir(parents=True, exist_ok=True)
         command = [
@@ -217,7 +234,9 @@ def cmd_package(args: argparse.Namespace, config: ReleaseConfig) -> int:
         package_path = format_versioned_path(target.package_path, args.version)
 
         if not export_dir.exists():
-            print(f"ERROR: Export directory does not exist: {relative(export_dir)}", file=sys.stderr)
+            print(
+                f"ERROR: Export directory does not exist: {relative(export_dir)}", file=sys.stderr
+            )
             return 1
 
         package_path.parent.mkdir(parents=True, exist_ok=True)
@@ -382,13 +401,6 @@ def _quote(value: str) -> str:
     if " " not in value:
         return value
     return f'"{value}"'
-
-
-def relative(path: Path) -> str:
-    try:
-        return str(path.relative_to(REPO_ROOT))
-    except ValueError:
-        return str(path)
 
 
 if __name__ == "__main__":

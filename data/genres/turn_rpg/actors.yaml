@@ -1,0 +1,23 @@
+schema_version: 1
+actors:
+  - id: actor_aster
+    legacy_id: 1
+    name: Aster
+    nickname: Trailblazer
+    profile: A balanced adventurer used by the first RPG editor slice.
+    class_id: class_adventurer
+    initial_level: 1
+    max_level: 99
+    assets:
+      portrait: ""
+      map_sprite: ""
+      battle_sprite: ""
+    base_stats:
+      max_hp: 120
+      max_mp: 30
+      attack: 18
+      defense: 14
+      magic_attack: 10
+      magic_defense: 12
+      agility: 16
+      luck: 10

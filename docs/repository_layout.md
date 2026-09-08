@@ -17,6 +17,7 @@ NimdaGame/
       genres/
       plugins/
       addons/
+        nimda_rpg_editor/
       data/generated/
     native/
     web/
@@ -62,6 +63,12 @@ clients/godot/app/scenes/main.tscn
 ```
 
 Godot `res://` paths are relative to `clients/godot/`, not the repository root.
+
+The Godot editor extension lives at:
+
+```text
+clients/godot/addons/nimda_rpg_editor/
+```
 
 ## Servers
 
@@ -131,6 +138,7 @@ tools/
   mygame_tools/
     validate_config.py
     generate_godot_data.py
+    rpg_editor_data.py
     simulate_battle.py
     balance_report.py
     validate_plugins.py

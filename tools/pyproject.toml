@@ -15,12 +15,26 @@ dependencies = [
 [project.scripts]
 nimdagame-release = "mygame_tools.release_pipeline:main"
 nimdagame-validate-plugins = "mygame_tools.validate_plugins:main"
+nimdagame-generate-data = "mygame_tools.generate_godot_data:main"
+nimdagame-validate-config = "mygame_tools.validate_config:main"
+nimdagame-rpg-editor-data = "mygame_tools.rpg_editor_data:main"
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
-    "ruff>=0.5",
+    "ruff==0.15.21",
 ]
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["mygame_tools*"]

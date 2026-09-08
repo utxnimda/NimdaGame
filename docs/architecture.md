@@ -149,3 +149,8 @@ The next milestone should implement one vertical slice inside a genre package:
 3. A C++ gameplay function that resolves one deterministic action.
 4. A GDExtension bridge exposing that function to Godot.
 5. A Godot scene under `clients/godot/genres/<genre>/scenes/` displaying before and after state.
+
+## Implementation Conventions
+
+See [development conventions](development.md) for the implemented editor/data-tool
+boundaries, database extension steps, coding style and automated checks.

@@ -25,6 +25,10 @@ window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/nimda_rpg_editor/plugin.cfg")
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

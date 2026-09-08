@@ -75,6 +75,17 @@ python tools/mygame_tools/release_pipeline.py notes --version 0.1.0
 
 真正导出需要本机 Godot export presets。详见 [docs/release_pipeline.md](docs/release_pipeline.md)。
 
+## RPG 编辑器
+
+Godot 客户端已经启用 `Nimda RPG Editor` 插件。第一阶段提供接近 RPG Maker 工作流的角色数据库，并使用 YAML 源数据、JSON Schema 校验和生成后的运行时 JSON。
+
+```powershell
+python -m pip install -e "tools[dev]"
+godot --editor --path clients/godot
+```
+
+编辑器工作流和后续规划见 [docs/rpg_editor.md](docs/rpg_editor.md)。
+
 ## 当前状态
 
-当前仓库包含可复用项目结构、插件注册器、数据工具桩、C++ core scaffold、Godot GDExtension scaffold 和发布工具。下一个实现里程碑应该在某个游戏类型包内添加一条完整垂直切片，而不是继续把玩法放到通用 demo 目录下。
+当前仓库包含可复用项目结构、运行时插件注册器、首个 RPG 编辑器数据库切片、可运行的数据校验和生成工具、C++ core scaffold、Godot GDExtension scaffold 和发布工具。编辑器的下一个里程碑是职业与技能数据库，以及带类型的交叉引用字段。
